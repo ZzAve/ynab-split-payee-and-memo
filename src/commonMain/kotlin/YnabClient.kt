@@ -1,0 +1,140 @@
+import co.touchlab.kermit.Logger
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
+
+/**
+ * Client for the YNAB API.
+ * Based on the YNAB API documentation: https://api.ynab.com/
+ */
+class YnabClient(private val token: String) {
+    private val logger = Logger.withTag("YnabClient")
+    private val baseUrl = "https://api.ynab.com/v1"
+    
+    private val client = HttpClient {
+        install(ContentNegotiation) {
+            json(Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+                encodeDefaults = true
+            })
+        }
+    }
+
+    /**
+     * Get the default budget ID.
+     * If no default budget is found, returns the first budget in the list.
+     */
+    suspend fun getDefaultBudgetId(): String {
+        logger.i { "Fetching budgets" }
+
+        val response = client.get("$baseUrl/budgets") {
+            header("Authorization", "Bearer $token")
+        }
+
+        if (response.status != HttpStatusCode.OK) {
+            throw Exception("Failed to fetch budgets: ${response.status}")
+        }
+
+        val ynabResponse: YnabResponse<BudgetSummaryResponse> = response.body()
+
+        val budgets = ynabResponse.data.budgets
+        if (budgets.isEmpty()) {
+            throw IllegalStateException("No budgets found")
+        }
+
+        // Use default budget if available, otherwise use the first budget
+        val defaultBudget = ynabResponse.data.defaultBudget
+        val budgetId = defaultBudget?.id ?: budgets.first().id
+
+        logger.i { "Using budget: ${defaultBudget?.name ?: budgets.first().name} ($budgetId)" }
+
+        return budgetId
+    }
+
+    /**
+     * Get transactions for a budget.
+     * 
+     * @param budgetId The budget ID
+     * @param accountId Optional account ID to filter transactions
+     * @param sinceDate Optional date to filter transactions since
+     * @return List of transactions
+     */
+    suspend fun getTransactions(
+        budgetId: String,
+        accountId: String? = null,
+        sinceDate: LocalDate? = null
+    ): List<Transaction> {
+        logger.i { "Fetching transactions for budget $budgetId" }
+
+        val url = if (accountId != null) {
+            "$baseUrl/budgets/$budgetId/accounts/$accountId/transactions"
+        } else {
+            "$baseUrl/budgets/$budgetId/transactions"
+        }
+
+        val response = client.get(url) {
+            header("Authorization", "Bearer $token")
+            if (sinceDate != null) {
+                parameter("since_date", sinceDate.toString())
+            }
+        }
+
+        if (response.status != HttpStatusCode.OK) {
+            throw Exception("Failed to fetch transactions: ${response.status}")
+        }
+
+        val ynabResponse: YnabResponse<TransactionsResponse> = response.body()
+
+        return ynabResponse.data.transactions.filter { !it.deleted }
+    }
+
+    /**
+     * Update a transaction.
+     * 
+     * @param budgetId The budget ID
+     * @param transactionId The transaction ID
+     * @param payeeName The new payee name
+     * @param memo The new memo
+     */
+    suspend fun updateTransaction(
+        budgetId: String,
+        transactionId: String,
+        payeeName: String,
+        memo: String
+    ): Transaction {
+        logger.i { "Updating transaction $transactionId" }
+
+        val update = TransactionUpdate(
+            payeeName = payeeName,
+            memo = memo
+        )
+
+        val wrapper = SaveTransactionWrapper(update)
+
+        val response = client.put("$baseUrl/budgets/$budgetId/transactions/$transactionId") {
+            header("Authorization", "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody(wrapper)
+        }
+
+        if (response.status != HttpStatusCode.OK) {
+            throw Exception("Failed to update transaction: ${response.status}")
+        }
+
+        val ynabResponse: YnabResponse<TransactionResponse> = response.body()
+
+        return ynabResponse.data.transaction
+    }
+}
