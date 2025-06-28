@@ -85,20 +85,21 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
 
         // Process each transaction
         transactionsToUpdate.forEach { transaction ->
-            val (newPayee, newMemo) = parseDescription(transaction.importPayeeName!!)
+            val updated = parseDescription(transaction) ?: return@forEach
 
             logger.i { "Transaction: ${transaction.id}" }
             logger.i { "  Original payee: ${transaction.payeeName}" }
             logger.i { "  Import payee: ${transaction.importPayeeName}" }
-            logger.i { "  New payee: $newPayee" }
-            logger.i { "  New memo: $newMemo" }
+            logger.i { "  New payee: ${updated.payee}" }
+            logger.i { "  Original memo: ${transaction.importMemo} (${transaction.memo})" }
+            logger.i { "  New memo: ${updated.memo}" }
 
             if (!dryRun) {
                 ynabClient.updateTransaction(
                     budgetId = effectiveBudgetId,
                     transactionId = transaction.id,
-                    payeeName = newPayee,
-                    memo = newMemo
+                    payeeName = updated.payee,
+                    memo = updated.memo
                 )
                 logger.i { "  Updated!" }
             }
@@ -107,48 +108,36 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
         logger.i { "Done!" }
     }
 
-    private fun parseDescription(description: String): Pair<String, String> {
-        // This is a simple implementation that can be customized based on the specific format
-        // of the bank's transaction descriptions
+    data class NewPayeeAndMemo(
+        val payee: String,
+        val memo: String?,
+    )
 
-        // Example: "PURCHASE AMAZON.COM AMZN.COM/BILL WA"
-        // Might be split into:
-        // Payee: "AMAZON.COM"
-        // Memo: "PURCHASE AMZN.COM/BILL WA"
-
-        // Another example: "POS PURCHASE - KROGER #123 - CINCINNATI OH"
-        // Might be split into:
-        // Payee: "KROGER"
-        // Memo: "POS PURCHASE - #123 - CINCINNATI OH"
-
-        // This is a very basic implementation that assumes the second word is the merchant name
-        // and everything else goes into the memo
-        val parts = description.split(" ", limit = 3)
-
-        return when {
-            parts.size >= 3 -> {
-                // Assume format is "TYPE MERCHANT DETAILS"
-                val type = parts[0]
-                val merchant = parts[1]
-                val details = parts[2]
-
-                Pair(merchant, "$type $details")
-            }
-            parts.size == 2 -> {
-                // Assume format is "TYPE MERCHANT"
-                val type = parts[0]
-                val merchant = parts[1]
-
-                Pair(merchant, type)
-            }
-            else -> {
-                // Just use the whole thing as the payee
-                Pair(description, "")
-            }
+    private fun parseDescription(transaction: Transaction): NewPayeeAndMemo? {
+        if (transaction.payeeName != transaction.importPayeeName) {
+            logger.i { "Payee name does not match import payee name and was already changed by YNAB or user, skipping transaction: ${transaction.id}" }
+            return null
+        }
+        if (transaction.importPayeeName == null) {
+            logger.i { "Import payee name is null, skipping transaction: ${transaction.id}" }
+            return null
         }
 
-        // Note: In a real implementation, you would want to use more sophisticated
-        // pattern matching based on your bank's specific format
+
+        val split = transaction.importPayeeName.split(" - ", limit = 2)
+
+        val newPayee = split.firstOrNull() ?: return null.also{logger.i{ "No payee name found in transaction: ${transaction.id}"} }
+        val newMemo = if (transaction.memo == null && split.getOrNull(1) == null) {
+            null
+        } else {
+            val oldMemoPart = transaction.memo?.let { "$it - " } ?: ""
+            val newMemoPart = split.getOrElse(1) { "" }
+
+            oldMemoPart + newMemoPart
+        }
+
+        return NewPayeeAndMemo(payee = newPayee, memo = newMemo)
+
     }
 }
 

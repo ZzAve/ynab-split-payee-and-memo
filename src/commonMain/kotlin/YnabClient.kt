@@ -112,7 +112,7 @@ class YnabClient(private val token: String) {
         budgetId: String,
         transactionId: String,
         payeeName: String,
-        memo: String
+        memo: String?
     ): Transaction {
         logger.i { "Updating transaction $transactionId" }
 
