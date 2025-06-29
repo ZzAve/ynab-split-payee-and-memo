@@ -83,25 +83,51 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
 
         logger.i { "Found ${transactionsToUpdate.size} transactions to update" }
 
-        // Process each transaction
-        transactionsToUpdate.forEach { transaction ->
-            val updated = parseDescription(transaction) ?: return@forEach
+        // Process transactions in batches of 25
+        val batchSize = 25
+        val batches = transactionsToUpdate.chunked(batchSize)
 
-            logger.i { "Transaction: ${transaction.id}" }
-            logger.i { "  Original payee: ${transaction.payeeName}" }
-            logger.i { "  Import payee: ${transaction.importPayeeName}" }
-            logger.i { "  New payee: ${updated.payee}" }
-            logger.i { "  Original memo: ${transaction.importMemo} (${transaction.memo})" }
-            logger.i { "  New memo: ${updated.memo}" }
+        logger.i { "Processing transactions in ${batches.size} batches of up to $batchSize transactions each" }
 
-            if (!dryRun) {
-                ynabClient.updateTransaction(
-                    budgetId = effectiveBudgetId,
-                    transactionId = transaction.id,
-                    payeeName = updated.payee,
-                    memo = updated.memo
+        batches.forEachIndexed { batchIndex, batch ->
+            logger.i { "Processing batch ${batchIndex + 1} of ${batches.size} (${batch.size} transactions)" }
+
+            val transactionsToUpdateBatch = mutableListOf<SaveTransactionWithId>()
+
+            batch
+                .forEach { transaction ->
+                val updated = parseDescription(transaction) ?: return@forEach
+
+                logger.i { "Transaction: ${transaction.id}" }
+                logger.i { "  Original payee: ${transaction.payeeName}" }
+                logger.i { "  Import payee: ${transaction.importPayeeName}" }
+                logger.i { "  New payee: ${updated.payee}" }
+                logger.i { "  Original memo: ${transaction.importMemo} (${transaction.memo})" }
+                logger.i { "  New memo: ${updated.memo}" }
+
+                transactionsToUpdateBatch.add(
+                    SaveTransactionWithId(
+                        id = transaction.id,
+                        payeeId = null ,//transaction.payeeId, // null?,
+                        payeeName = updated.payee,
+                        memo = updated.memo,
+                        accountId = transaction.accountId,
+                        date = transaction.date,
+                        amount = transaction.amount,
+                        categoryId = transaction.categoryId,
+                        cleared = transaction.cleared,
+                        approved = transaction.approved,
+                        flagColor = transaction.flag_color,
+                    )
                 )
-                logger.i { "  Updated!" }
+            }
+
+            if (!dryRun && transactionsToUpdateBatch.isNotEmpty()) {
+                val updatedTransactions = ynabClient.updateTransactions(
+                    budgetId = effectiveBudgetId,
+                    transactions = transactionsToUpdateBatch
+                )
+                logger.i { "  Updated ${updatedTransactions.size} transactions in batch ${batchIndex + 1}!" }
             }
         }
 
@@ -136,6 +162,9 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             oldMemoPart + newMemoPart
         }
 
+        if (transaction.payeeName == newPayee && transaction.memo == newMemo) {
+            return null.also{logger.i{ "Payee name and memo are unchanged, skipping transaction: ${transaction.id}"} }
+        }
         return NewPayeeAndMemo(payee = newPayee, memo = newMemo)
 
     }

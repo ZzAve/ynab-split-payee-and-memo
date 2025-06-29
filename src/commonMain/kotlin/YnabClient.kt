@@ -3,15 +3,9 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 
 /**
@@ -21,7 +15,7 @@ import kotlinx.serialization.json.Json
 class YnabClient(private val token: String) {
     private val logger = Logger.withTag("YnabClient")
     private val baseUrl = "https://api.ynab.com/v1"
-    
+
     private val client = HttpClient {
         install(ContentNegotiation) {
             json(Json {
@@ -136,5 +130,35 @@ class YnabClient(private val token: String) {
         val ynabResponse: YnabResponse<TransactionResponse> = response.body()
 
         return ynabResponse.data.transaction
+    }
+
+    /**
+     * Update multiple transactions in a batch.
+     * 
+     * @param budgetId The budget ID
+     * @param transactions List of transactions to update
+     * @return List of updated transactions
+     */
+    suspend fun updateTransactions(
+        budgetId: String,
+        transactions: List<SaveTransactionWithId>
+    ): List<Transaction> {
+        logger.i { "Batch updating ${transactions.size} transactions" }
+
+        val wrapper = PatchTransactionsWrapper(transactions)
+
+        val response = client.patch("$baseUrl/budgets/$budgetId/transactions") {
+            header("Authorization", "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody(wrapper)
+        }
+
+        if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.fromValue(209)) {
+            throw Exception("Failed to update transactions: ${response.status}")
+        }
+
+        val ynabResponse: YnabResponse<SaveTransactionsResponse> = response.body()
+
+        return ynabResponse.data.transactions
     }
 }

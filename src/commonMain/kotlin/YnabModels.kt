@@ -1,6 +1,5 @@
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.LocalDate
 
 /**
  * Models for the YNAB API responses.
@@ -95,4 +94,31 @@ data class TransactionUpdate(
 @Serializable
 data class SaveTransactionWrapper(
     val transaction: TransactionUpdate
+)
+
+@Serializable
+data class PatchTransactionsWrapper(
+    val transactions: List<SaveTransactionWithId>
+)
+
+@Serializable
+data class SaveTransactionWithId(
+    val id: String? = null,
+    @SerialName("account_id") val accountId: String,
+    val date: String,
+    val amount: Long,
+    @SerialName("payee_id") val payeeId: String?,
+    @SerialName("payee_name") val payeeName: String?,
+    @SerialName("category_id") val categoryId: String?,
+    val memo: String?,
+    val cleared: String?,
+    val approved: Boolean?,
+    @SerialName("flag_color") val flagColor: String?
+)
+
+@Serializable
+data class SaveTransactionsResponse(
+    val transactions: List<Transaction>,
+    @SerialName("duplicate_import_ids") val duplicateImportIds: List<String>? = null,
+    @SerialName("server_knowledge") val serverKnowledge: Long? = null
 )
