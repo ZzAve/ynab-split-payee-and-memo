@@ -1,10 +1,21 @@
 import co.touchlab.kermit.Logger
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 
@@ -22,7 +33,13 @@ class YnabClient(private val token: String) {
                 ignoreUnknownKeys = true
                 isLenient = true
                 encodeDefaults = true
+                explicitNulls = false
             })
+
+        }
+        install(Logging) {
+            this.logger = io.ktor.client.plugins.logging.Logger.DEFAULT
+            level = LogLevel.ALL
         }
     }
 
@@ -67,8 +84,9 @@ class YnabClient(private val token: String) {
      */
     suspend fun getTransactions(
         budgetId: String,
-        accountId: String? = null,
-        sinceDate: LocalDate? = null
+        accountId: String?,
+        sinceDate: LocalDate?,
+        onlyUnapproved: Boolean
     ): List<Transaction> {
         logger.i { "Fetching transactions for budget $budgetId" }
 
@@ -83,6 +101,9 @@ class YnabClient(private val token: String) {
             if (sinceDate != null) {
                 parameter("since_date", sinceDate.toString())
             }
+
+            if (onlyUnapproved)
+                parameter("type", "unapproved")
         }
 
         if (response.status != HttpStatusCode.OK) {
@@ -151,10 +172,11 @@ class YnabClient(private val token: String) {
             header("Authorization", "Bearer $token")
             contentType(ContentType.Application.Json)
             setBody(wrapper)
+            println(this.body)
         }
 
         if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.fromValue(209)) {
-            throw Exception("Failed to update transactions: ${response.status}")
+            throw Exception("Failed to update transactions: ${response.status}, ${response.bodyAsText()}")
         }
 
         val ynabResponse: YnabResponse<SaveTransactionsResponse> = response.body()
