@@ -70,9 +70,9 @@ java -jar ynab-split-payee-and-memo-1.0-SNAPSHOT-all.jar --token YOUR_YNAB_TOKEN
 
 ### Command-line Options
 
-- `-t, --token`: YNAB Personal Access Token (required)
-- `-b, --budget-id`: YNAB Budget ID (default: last used budget)
-- `-a, --account-id`: YNAB Account ID (default: all accounts)
+- `-t, --token`: YNAB Personal Access Token (required) - Can also be set with `YNAB_TOKEN` environment variable
+- `-b, --budget-id`: YNAB Budget ID (default: last used budget) - Can also be set with `YNAB_BUDGET_ID` environment variable
+- `-a, --account-id`: YNAB Account ID (default: all accounts) - Can also be set with `YNAB_ACCOUNT_ID` environment variable
 - `-d, --days-back`: Number of days to look back for transactions (default: 30)
 - `--dry-run`: Don't actually update transactions, just show what would be updated
 - `--only-unapproved`: Only process unapproved transactions (default: true)
@@ -102,6 +102,12 @@ Process all transactions, not just unapproved ones:
 
 ```bash
 docker run --rm zzave/ynab-split-payee --token YOUR_YNAB_TOKEN --all
+```
+
+Using environment variables instead of command-line arguments:
+
+```bash
+docker run --rm -e YNAB_TOKEN=YOUR_YNAB_TOKEN -e YNAB_BUDGET_ID=BUDGET_ID -e YNAB_ACCOUNT_ID=ACCOUNT_ID zzave/ynab-split-payee
 ```
 
 ### Customizing the Parsing Logic

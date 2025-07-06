@@ -6,7 +6,7 @@ RUN mkdir /opt/app
 WORKDIR /opt/app
 
 # Build small JRE image
-RUN $JAVA_HOME/bin/jlink \
+RUN "$JAVA_HOME"/bin/jlink \
          --verbose \
          --add-modules ALL-MODULE-PATH \
          --strip-debug \
@@ -22,29 +22,25 @@ WORKDIR /home/gradle/src
 RUN ./gradlew shadowJar --no-daemon
 
 # Third stage, Use the custom JRE and build the app image  
-FROM alpine:latest
+FROM alpine:3.22.0
 ENV JAVA_HOME=/opt/jdk/jdk-21
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # copy JRE from the base image
-COPY --from=jre-builder /optimized-jdk-21 $JAVA_HOME
-RUN ls -l $JAVA_HOME
-RUN ls -l /opt/jdk/jdk-21/bin/
-RUN ls -l $JAVA_HOME/bin/java
-RUN echo $PATH
+COPY --from=jre-builder /optimized-jdk-21 "$JAVA_HOME"
 # Add app user
-ARG APPLICATION_USER=spring
+ARG APPLICATION_USER=ynab
 
 # Create a user to run the application, don't run as root
-RUN addgroup --system $APPLICATION_USER &&  adduser --system $APPLICATION_USER --ingroup $APPLICATION_USER
+RUN addgroup --system "$APPLICATION_USER" &&  \
+    adduser --system "$APPLICATION_USER" --ingroup "$APPLICATION_USER" && \
+    mkdir /app && \
+    chown -R "$APPLICATION_USER" /app
 
-# Create the application directory
-RUN mkdir /app && chown -R $APPLICATION_USER /app
-
-COPY --from=build --chown=$APPLICATION_USER:$APPLICATION_USER /home/gradle/src/build/libs/*-all.jar /app/app.jar
+COPY --from=build --chown="$APPLICATION_USER":"$APPLICATION_USER" /home/gradle/src/build/libs/*-all.jar /app/app.jar
 
 WORKDIR /app
 
-USER $APPLICATION_USER
+USER "$APPLICATION_USER"
 
 ENTRYPOINT [ "java", "-jar", "/app/app.jar" ]

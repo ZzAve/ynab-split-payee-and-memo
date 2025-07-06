@@ -1,10 +1,9 @@
 import groovy.xml.dom.DOMCategory.attributes
 
 plugins {
-    kotlin("jvm") version "2.1.21"
-    kotlin("plugin.serialization") version "2.1.21"
-    id("com.google.cloud.tools.jib") version "3.4.5"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.shadow)
     application
 }
 
@@ -17,14 +16,6 @@ repositories {
 }
 
 
-jib {
-    from {
-//        image = "eclipse-temurin:21-alpine"
-    }
-    to {
-        image = "eu.gcr.io/my-gcp-project/my-app"
-    }
-}
 
 // Configure the application
 application {
@@ -45,28 +36,27 @@ tasks.shadowJar {
 
 dependencies {
     // Kotlin standard library
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation(libs.kotlin.stdlib)
 
     // Kotlinx Serialization for JSON
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation(libs.kotlinx.serialization)
 
     // Kotlinx Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation(libs.kotlinx.coroutines)
 
     // Ktor client
-    implementation("io.ktor:ktor-client-core:3.2.0")
-    implementation("io.ktor:ktor-client-cio-jvm:3.2.0")
-    implementation("io.ktor:ktor-client-content-negotiation:3.2.0")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.0")
-    implementation("io.ktor:ktor-client-logging:3.2.0")
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.json)
+    implementation(libs.ktor.client.logging)
 
-    // Kermit for logging
-    implementation("co.touchlab:kermit:2.0.2")
-    implementation("ch.qos.logback:logback-classic:1.4.11")
+    // Logging with SLF4J and Logback
+    implementation(libs.logback)
 
     // Kotlinx DateTime
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    implementation(libs.kotlinx.datetime)
 
     // Clikt for command-line interface
-    implementation("com.github.ajalt.clikt:clikt:4.2.1")
+    implementation(libs.clikt)
 }

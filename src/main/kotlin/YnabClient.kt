@@ -1,4 +1,4 @@
-import co.touchlab.kermit.Logger
+import org.slf4j.LoggerFactory
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -9,7 +9,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.patch
-import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -24,7 +23,7 @@ import kotlinx.serialization.json.Json
  * Based on the YNAB API documentation: https://api.ynab.com/
  */
 class YnabClient(private val token: String) {
-    private val logger = Logger.withTag("YnabClient")
+    private val logger = LoggerFactory.getLogger(javaClass)
     private val baseUrl = "https://api.ynab.com/v1"
 
     private val client = HttpClient {
@@ -38,8 +37,8 @@ class YnabClient(private val token: String) {
 
         }
         install(Logging) {
-            this.logger = io.ktor.client.plugins.logging.Logger.DEFAULT
-            level = LogLevel.ALL
+            logger = io.ktor.client.plugins.logging.Logger.DEFAULT
+            level = LogLevel.INFO
         }
     }
 
@@ -47,8 +46,8 @@ class YnabClient(private val token: String) {
      * Get the default budget ID.
      * If no default budget is found, returns the first budget in the list.
      */
-    suspend fun getDefaultBudgetId(): String {
-        logger.i { "Fetching budgets" }
+    suspend fun getDefaultBudget(): BudgetSummary {
+        logger.info("Fetching budgets")
 
         val response = client.get("$baseUrl/budgets") {
             header("Authorization", "Bearer $token")
@@ -61,15 +60,13 @@ class YnabClient(private val token: String) {
         val ynabResponse: YnabResponse<BudgetSummaryResponse> = response.body()
 
         val budgets = ynabResponse.data.budgets
-        if (budgets.isEmpty()) {
-            throw IllegalStateException("No budgets found")
+        check(budgets.isNotEmpty()) {
+            "No budgets found"
         }
 
         // Use default budget if available, otherwise use the first budget
         val defaultBudget = ynabResponse.data.defaultBudget
-        val budgetId = defaultBudget?.id ?: budgets.first().id
-
-        logger.i { "Using budget: ${defaultBudget?.name ?: budgets.first().name} ($budgetId)" }
+        val budgetId = defaultBudget ?: budgets.first()
 
         return budgetId
     }
@@ -88,7 +85,7 @@ class YnabClient(private val token: String) {
         sinceDate: LocalDate?,
         onlyUnapproved: Boolean
     ): List<Transaction> {
-        logger.i { "Fetching transactions for budget $budgetId" }
+        logger.info("Fetching transactions for budget $budgetId")
 
         val url = if (accountId != null) {
             "$baseUrl/budgets/$budgetId/accounts/$accountId/transactions"
@@ -116,44 +113,6 @@ class YnabClient(private val token: String) {
     }
 
     /**
-     * Update a transaction.
-     * 
-     * @param budgetId The budget ID
-     * @param transactionId The transaction ID
-     * @param payeeName The new payee name
-     * @param memo The new memo
-     */
-    suspend fun updateTransaction(
-        budgetId: String,
-        transactionId: String,
-        payeeName: String,
-        memo: String?
-    ): Transaction {
-        logger.i { "Updating transaction $transactionId" }
-
-        val update = TransactionUpdate(
-            payeeName = payeeName,
-            memo = memo
-        )
-
-        val wrapper = SaveTransactionWrapper(update)
-
-        val response = client.put("$baseUrl/budgets/$budgetId/transactions/$transactionId") {
-            header("Authorization", "Bearer $token")
-            contentType(ContentType.Application.Json)
-            setBody(wrapper)
-        }
-
-        if (response.status != HttpStatusCode.OK) {
-            throw Exception("Failed to update transaction: ${response.status}")
-        }
-
-        val ynabResponse: YnabResponse<TransactionResponse> = response.body()
-
-        return ynabResponse.data.transaction
-    }
-
-    /**
      * Update multiple transactions in a batch.
      * 
      * @param budgetId The budget ID
@@ -164,7 +123,7 @@ class YnabClient(private val token: String) {
         budgetId: String,
         transactions: List<SaveTransactionWithId>
     ): List<Transaction> {
-        logger.i { "Batch updating ${transactions.size} transactions" }
+        logger.info("Batch updating ${transactions.size} transactions")
 
         val wrapper = PatchTransactionsWrapper(transactions)
 

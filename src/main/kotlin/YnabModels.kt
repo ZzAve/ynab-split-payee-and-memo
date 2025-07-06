@@ -36,12 +36,12 @@ data class DateFormat(
 @Serializable
 data class CurrencyFormat(
     @SerialName("iso_code") val isoCode: String,
-    val example_format: String,
-    val decimal_digits: Int,
-    val decimal_separator: String,
+    @SerialName("example_format") val exampleFormat: String,
+    @SerialName("decimal_digits") val decimalDigits: Int,
+    @SerialName("decimal_separator") val decimalSeparator: String,
     @SerialName("symbol_first") val symbolFirst: Boolean,
     @SerialName("group_separator") val groupSeparator: String,
-    val currency_symbol: String,
+    @SerialName("currency_symbol") val currencySymbol: String,
     @SerialName("display_symbol") val displaySymbol: Boolean
 )
 
@@ -71,7 +71,7 @@ data class Transaction(
     @SerialName("category_id") val categoryId: String? = null,
     @SerialName("category_name") val categoryName: String? = null,
     val memo: String? = null,
-    val flag_color: String? = null,
+    @SerialName("flag_color") val flagColor: String? = null,
     @SerialName("import_id") val importId: String? = null,
     @SerialName("import_payee_name") val importPayeeName: String? = null,
     @SerialName("import_memo") val importMemo: String? = null
