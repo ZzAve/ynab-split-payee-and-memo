@@ -1,7 +1,44 @@
-# Run stage
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-#COPY ./build/bin/linuxX64/releaseExecutable/ynab-split-payee-and-memo.kexe /app/ynab-split-payee
-COPY ./build/bin/linuxX64/debugExecutable/ynab-split-payee-and-memo.kexe /app/ynab-split-payee
-RUN chmod +x /app/ynab-split-payee
-ENTRYPOINT ["/app/ynab-split-payee"]
+# First stage, build the custom JRE
+FROM eclipse-temurin:21-jdk-alpine AS jre-builder
+
+RUN mkdir /opt/app
+
+WORKDIR /opt/app
+
+# Build small JRE image
+RUN $JAVA_HOME/bin/jlink \
+         --verbose \
+         --add-modules ALL-MODULE-PATH \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /optimized-jdk-21
+
+# Second stage, Use the custom JRE and build the app image
+FROM alpine:latest
+ENV JAVA_HOME=/opt/jdk/jdk-21
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# copy JRE from the base image
+COPY --from=jre-builder /optimized-jdk-21 $JAVA_HOME
+RUN ls -l $JAVA_HOME
+RUN ls -l /opt/jdk/jdk-21/bin/
+RUN ls -l $JAVA_HOME/bin/java
+RUN echo $PATH
+# Add app user
+ARG APPLICATION_USER=spring
+
+# Create a user to run the application, don't run as root
+RUN addgroup --system $APPLICATION_USER &&  adduser --system $APPLICATION_USER --ingroup $APPLICATION_USER
+
+# Create the application directory
+RUN mkdir /app && chown -R $APPLICATION_USER /app
+
+COPY --chown=$APPLICATION_USER:$APPLICATION_USER build/libs/*-all.jar /app/app.jar
+
+WORKDIR /app
+
+USER $APPLICATION_USER
+
+ENTRYPOINT [ "java", "-jar", "/app/app.jar" ]

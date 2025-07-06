@@ -4,4 +4,4 @@
 !*.gradle.kts
 !gradlew
 !gradle
-!build/**
+!build/libs/**

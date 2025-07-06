@@ -97,13 +97,13 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             // Process transactions
             val transactionsToUpdate = transactions.filter {
                 // Filter transactions that need processing
-                it.memo.isNullOrBlank() && !it.payeeName.isNullOrBlank() && !it.importPayeeName.isNullOrBlank()
+                !it.payeeName.isNullOrBlank() && !it.importPayeeName.isNullOrBlank()
             }
 
             logger.i { "Found ${transactionsToUpdate.size} transactions to update" }
 
             // Process transactions in batches of 25
-            val batchSize = 1
+            val batchSize = 25
             val batches = transactionsToUpdate.chunked(batchSize)
 
             logger.i { "Processing transactions in ${batches.size} batches of up to $batchSize transactions each" }
@@ -196,5 +196,3 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
 
     }
 }
-
-// The main function is defined in the platform-specific source sets

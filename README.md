@@ -1,6 +1,6 @@
 # YNAB Split Payee and Memo
 
-A Kotlin Native application that uses the YNAB API to split transaction descriptions into separate Payee and Memo fields. The application can run natively on macOS and Linux without requiring a JVM.
+A JVM application built with GraalVM native image support that uses the YNAB API to split transaction descriptions into separate Payee and Memo fields. The application can run natively on any platform supported by GraalVM without requiring a JVM at runtime.
 
 ## Overview
 
@@ -12,41 +12,57 @@ This application helps you clean up your YNAB transactions by:
 
 ## Prerequisites
 
-- Kotlin Native (installed automatically by Gradle)
+- JDK 21 or later (for building)
+- GraalVM with native-image support (for building native executables)
+- Docker (for containerized builds and deployment)
 - YNAB Personal Access Token (get it from your YNAB account settings)
 
 ## Building the Application
 
-The application uses Gradle with the Kotlin Multiplatform plugin to build native executables for macOS and Linux.
+The application uses Gradle with the GraalVM native image plugin to build native executables.
 
-### Building for macOS
-
-```bash
-./gradlew macosX64Binaries
-```
-
-This will create a native executable in the `build/bin/macos/releaseExecutable/` directory.
-
-### Building for Linux
+### Building the JVM Application
 
 ```bash
-./gradlew linuxX64Binaries
+./gradlew build
 ```
 
-This will create a native executable in the `build/bin/linux/releaseExecutable/` directory.
+This will create a JAR file in the `build/libs/` directory.
+
+### Building the Native Executable
+
+```bash
+./gradlew nativeCompile
+```
+
+This will create a native executable in the `build/native/nativeCompile/` directory.
+
+### Building with Docker
+
+You can also build the application using Docker, which doesn't require GraalVM to be installed locally:
+
+```bash
+docker build -t ynab-split-payee .
+```
 
 ## Running the Application
 
-### On macOS
+### Running the JVM Application
 
 ```bash
-./build/bin/macos/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN
+java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN
 ```
 
-### On Linux
+### Running the Native Executable
 
 ```bash
-./build/bin/linux/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN
+./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN
+```
+
+### Running with Docker
+
+```bash
+docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN
 ```
 
 ### Command-line Options
@@ -61,38 +77,41 @@ This will create a native executable in the `build/bin/linux/releaseExecutable/`
 
 Run with default settings (last 30 days, all accounts, last used budget):
 
-#### macOS
 ```bash
-./build/bin/macos/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN
-```
+# Using the native executable
+./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN
 
-#### Linux
-```bash
-./build/bin/linux/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN
+# Using the JVM application
+java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN
+
+# Using Docker
+docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN
 ```
 
 Run with specific budget and account:
 
-#### macOS
 ```bash
-./build/bin/macos/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
-```
+# Using the native executable
+./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
 
-#### Linux
-```bash
-./build/bin/linux/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
+# Using the JVM application
+java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
+
+# Using Docker
+docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
 ```
 
 Run in dry-run mode (no actual updates):
 
-#### macOS
 ```bash
-./build/bin/macos/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN --dry-run
-```
+# Using the native executable
+./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN --dry-run
 
-#### Linux
-```bash
-./build/bin/linux/releaseExecutable/ynab-split-payee-and-memo.kexe --token YOUR_YNAB_TOKEN --dry-run
+# Using the JVM application
+java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN --dry-run
+
+# Using Docker
+docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN --dry-run
 ```
 
 ## How It Works
@@ -113,32 +132,42 @@ The application uses a simple parsing algorithm to split transaction description
 
 ## Customizing the Parsing Logic
 
-You can customize the parsing logic by modifying the `parseDescription` method in the `src/commonMain/kotlin/Main.kt` file. This allows you to adapt the application to your bank's specific transaction description format.
+You can customize the parsing logic by modifying the `extractNewPayeeAndMemo` method in the `src/main/kotlin/YnabSplitter.kt` file. This allows you to adapt the application to your bank's specific transaction description format.
 
-After making changes, rebuild the application for your platform:
+After making changes, rebuild the application:
 
 ```bash
-# For macOS
-./gradlew macosX64Binaries
+# For JVM application
+./gradlew build
 
-# For Linux
-./gradlew linuxX64Binaries
+# For native executable
+./gradlew nativeCompile
+
+# For Docker image
+docker build -t ynab-split-payee .
 ```
 
-## Kotlin/Native Benefits and Limitations
+## GraalVM Native Image Benefits and Limitations
 
 ### Benefits
 
-- **No JVM Required**: The application runs natively on the target platform without requiring a Java Virtual Machine.
+- **No JVM Required at Runtime**: The native executable runs without requiring a Java Virtual Machine.
 - **Faster Startup**: Native executables start up faster than JVM applications.
 - **Smaller Distribution**: The executable contains only what's needed, without the overhead of the JVM.
-- **Cross-Platform**: The same codebase can target multiple platforms (macOS, Linux).
+- **Cross-Platform**: The same codebase can target multiple platforms (macOS, Linux, Windows).
+- **Full JVM Library Ecosystem**: You can use any JVM library, unlike Kotlin/Native which has limited library support.
+- **Simplified Development**: Develop using standard JVM tools and libraries, then compile to native code.
 
 ### Limitations
 
-- **Platform-Specific Builds**: You need to build separate executables for each target platform.
-- **Library Compatibility**: Not all JVM libraries have Kotlin/Native compatible alternatives.
-- **Memory Management**: Kotlin/Native has different memory management than the JVM, which can affect performance characteristics.
+- **Build Time**: Building native images takes longer than compiling JVM applications.
+- **Reflection Configuration**: Applications using reflection (like JSON serialization) require additional configuration.
+- **Dynamic Features**: Some dynamic JVM features (like dynamic class loading) may not work or require special configuration.
+- **Debugging**: Debugging native executables can be more challenging than debugging JVM applications.
+
+## Cloud Deployment
+
+This application is configured for deployment to Google Cloud Run as a containerized job. The included GitHub Actions workflow automates the build and deployment process.
 
 ## License
 
