@@ -1,68 +1,71 @@
 # YNAB Split Payee and Memo
 
-A JVM application built with GraalVM native image support that uses the YNAB API to split transaction descriptions into separate Payee and Memo fields. The application can run natively on any platform supported by GraalVM without requiring a JVM at runtime.
+## What is this for
 
-## Overview
+YNAB Split Payee and Memo is a small utility that uses the YNAB API to split transaction descriptions into separate
+Payee and Memo fields. The application is packaged as a lightweight Docker container with an optimized JRE for efficient
+deployment.
 
 This application helps you clean up your YNAB transactions by:
 
 1. Pulling transactions via the YNAB API
-2. Parsing the original description
+2. Parsing the original description (splitting by " - ")
 3. Updating transactions with separated Payee and Memo fields
 
-## Prerequisites
+## Why is this useful
 
-- JDK 21 or later (for building)
-- GraalVM with native-image support (for building native executables)
-- Docker (for containerized builds and deployment)
+When using linked accounts and direct import for transactions into YNAB from some banks (e.g. bunq and Knab in the Netherlands), the transaction descriptions often contain both the merchant name
+and additional information about the purchase. For example, "AMAZON.COM - BOOKS" contains both the merchant (AMAZON.COM)
+and what was purchased (BOOKS).
+
+By default, YNAB places this entire string in the Payee field, which can make your transaction list cluttered and harder
+to categorize or search. This application automatically:
+
+- Separates the merchant name into the Payee field
+- Moves the purchase details into the Memo field
+- Preserves any existing memo content
+
+The application uses a simple parsing algorithm to split transaction descriptions:
+
+1. It looks for transactions where the payee name matches the import payee name (meaning it hasn't been manually changed
+   by the user)
+2. It then splits the import payee name by " - " (dash with spaces):
+    - The first part becomes the new payee name
+    - The second part (if it exists) is combined with any existing memo to form the new memo
+
+For example, if the import payee name is "AMAZON.COM - BOOKS", it will be split into:
+
+- Payee: "AMAZON.COM"
+- Memo: "BOOKS" (plus any existing memo content)
+
+If there's no dash in the import payee name, the entire name becomes the payee and the memo remains unchanged.
+
+## How to use this
+
+### Prerequisites
+
 - YNAB Personal Access Token (get it from your YNAB account settings)
+- Docker (for containerized deployment) or Java 21+ (for running the JAR directly)
 
-## Building the Application
+> ℹ️ The YNAB api has a ratelimit per access token in order to prevent misuse or poorly configured scripts
+>
+> More info on their [api documentation site](https://api.ynab.com/#rate-limiting).
 
-The application uses Gradle with the GraalVM native image plugin to build native executables.
+### Running the Application
 
-### Building the JVM Application
+#### Running with Docker (recommended)
 
 ```bash
-./gradlew build
+# build your docker container
+docker build -t zzave/ynab-split-payee .
+docker run --rm zzave/ynab-split-payee --token YOUR_YNAB_TOKEN
 ```
 
-This will create a JAR file in the `build/libs/` directory.
-
-### Building the Native Executable
+#### Running the JVM Application
 
 ```bash
-./gradlew nativeCompile
-```
-
-This will create a native executable in the `build/native/nativeCompile/` directory.
-
-### Building with Docker
-
-You can also build the application using Docker, which doesn't require GraalVM to be installed locally:
-
-```bash
-docker build -t ynab-split-payee .
-```
-
-## Running the Application
-
-### Running the JVM Application
-
-```bash
-java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN
-```
-
-### Running the Native Executable
-
-```bash
-./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN
-```
-
-### Running with Docker
-
-```bash
-docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN
+./gradlew shadowJar
+java -jar ynab-split-payee-and-memo-1.0-SNAPSHOT-all.jar --token YOUR_YNAB_TOKEN
 ```
 
 ### Command-line Options
@@ -72,102 +75,85 @@ docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN
 - `-a, --account-id`: YNAB Account ID (default: all accounts)
 - `-d, --days-back`: Number of days to look back for transactions (default: 30)
 - `--dry-run`: Don't actually update transactions, just show what would be updated
+- `--only-unapproved`: Only process unapproved transactions (default: true)
+- `--all`: Process all transactions, not just unapproved ones
 
 ### Examples
 
-Run with default settings (last 30 days, all accounts, last used budget):
+Run with default settings (last 30 days, all accounts, last used budget, only unapproved transactions):
 
 ```bash
-# Using the native executable
-./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN
-
-# Using the JVM application
-java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN
-
-# Using Docker
-docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN
+docker run --rm zzave/ynab-split-payee --token YOUR_YNAB_TOKEN
 ```
 
 Run with specific budget and account:
 
 ```bash
-# Using the native executable
-./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
-
-# Using the JVM application
-java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
-
-# Using Docker
-docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
+docker run --rm zzave/ynab-split-payee --token YOUR_YNAB_TOKEN --budget-id BUDGET_ID --account-id ACCOUNT_ID
 ```
 
 Run in dry-run mode (no actual updates):
 
 ```bash
-# Using the native executable
-./build/native/nativeCompile/ynab-split-payee --token YOUR_YNAB_TOKEN --dry-run
-
-# Using the JVM application
-java -jar build/libs/ynab-split-payee-and-memo-1.0-SNAPSHOT.jar --token YOUR_YNAB_TOKEN --dry-run
-
-# Using Docker
-docker run --rm ynab-split-payee --token YOUR_YNAB_TOKEN --dry-run
+docker run --rm zzave/ynab-split-payee --token YOUR_YNAB_TOKEN --dry-run
 ```
 
-## How It Works
-
-The application uses a simple parsing algorithm to split transaction descriptions into payee and memo fields:
-
-1. For descriptions with 3 or more words (e.g., "PURCHASE AMAZON.COM AMZN.COM/BILL WA"):
-   - Payee: The second word ("AMAZON.COM")
-   - Memo: The first word + the rest ("PURCHASE AMZN.COM/BILL WA")
-
-2. For descriptions with 2 words (e.g., "PURCHASE AMAZON.COM"):
-   - Payee: The second word ("AMAZON.COM")
-   - Memo: The first word ("PURCHASE")
-
-3. For descriptions with 1 word:
-   - Payee: The entire description
-   - Memo: Empty
-
-## Customizing the Parsing Logic
-
-You can customize the parsing logic by modifying the `extractNewPayeeAndMemo` method in the `src/main/kotlin/YnabSplitter.kt` file. This allows you to adapt the application to your bank's specific transaction description format.
-
-After making changes, rebuild the application:
+Process all transactions, not just unapproved ones:
 
 ```bash
-# For JVM application
-./gradlew build
+docker run --rm zzave/ynab-split-payee --token YOUR_YNAB_TOKEN --all
+```
 
-# For native executable
-./gradlew nativeCompile
+### Customizing the Parsing Logic
 
-# For Docker image
+You can customize the parsing logic by modifying the `extractNewPayeeAndMemo` method in the
+`src/main/kotlin/YnabSplitter.kt` file. This allows you to adapt the application to your bank's specific transaction
+description format.
+
+After making changes, rebuild the application following the instructions in the "Build from source" section.
+
+## Build from source
+
+### Prerequisites
+
+- JDK 21 or later
+- Docker (for containerized builds)
+
+### Building the JVM Application
+
+The application uses Gradle to build a fat JAR that includes all dependencies:
+
+```bash
+./gradlew shadowJar
+```
+
+This will create a fat JAR file in the `build/libs/` directory with the suffix `-all.jar`.
+
+### Building with Docker
+
+You can also build the application using Docker:
+
+```bash
 docker build -t ynab-split-payee .
 ```
 
-## GraalVM Native Image Benefits and Limitations
+The Docker build creates an optimized container with a custom JRE that includes only the necessary modules, resulting in
+a smaller image size.
 
-### Benefits
+## Docker Optimization
 
-- **No JVM Required at Runtime**: The native executable runs without requiring a Java Virtual Machine.
-- **Faster Startup**: Native executables start up faster than JVM applications.
-- **Smaller Distribution**: The executable contains only what's needed, without the overhead of the JVM.
-- **Cross-Platform**: The same codebase can target multiple platforms (macOS, Linux, Windows).
-- **Full JVM Library Ecosystem**: You can use any JVM library, unlike Kotlin/Native which has limited library support.
-- **Simplified Development**: Develop using standard JVM tools and libraries, then compile to native code.
+The application uses a multi-stage Docker build to create a lightweight container:
 
-### Limitations
+1. The first stage builds a custom, optimized JRE using jlink, which includes only the necessary Java modules.
+2. The second stage creates a minimal Alpine Linux container with the optimized JRE and the application JAR.
+3. The application runs as a non-root user for improved security.
 
-- **Build Time**: Building native images takes longer than compiling JVM applications.
-- **Reflection Configuration**: Applications using reflection (like JSON serialization) require additional configuration.
-- **Dynamic Features**: Some dynamic JVM features (like dynamic class loading) may not work or require special configuration.
-- **Debugging**: Debugging native executables can be more challenging than debugging JVM applications.
+Benefits of this approach:
 
-## Cloud Deployment
-
-This application is configured for deployment to Google Cloud Run as a containerized job. The included GitHub Actions workflow automates the build and deployment process.
+- **Smaller Container Size**: The optimized JRE is much smaller than a full JDK or JRE.
+- **Faster Startup**: The container starts quickly due to the optimized JRE.
+- **Improved Security**: Running as a non-root user reduces the risk of container breakout.
+- **Simplified Deployment**: The container includes everything needed to run the application.
 
 ## License
 

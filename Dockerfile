@@ -15,7 +15,13 @@ RUN $JAVA_HOME/bin/jlink \
          --compress=2 \
          --output /optimized-jdk-21
 
-# Second stage, Use the custom JRE and build the app image
+# Second stage, build the application
+FROM eclipse-temurin:21-jdk-alpine AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN ./gradlew shadowJar --no-daemon
+
+# Third stage, Use the custom JRE and build the app image  
 FROM alpine:latest
 ENV JAVA_HOME=/opt/jdk/jdk-21
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
@@ -35,7 +41,7 @@ RUN addgroup --system $APPLICATION_USER &&  adduser --system $APPLICATION_USER -
 # Create the application directory
 RUN mkdir /app && chown -R $APPLICATION_USER /app
 
-COPY --chown=$APPLICATION_USER:$APPLICATION_USER build/libs/*-all.jar /app/app.jar
+COPY --from=build --chown=$APPLICATION_USER:$APPLICATION_USER /home/gradle/src/build/libs/*-all.jar /app/app.jar
 
 WORKDIR /app
 
