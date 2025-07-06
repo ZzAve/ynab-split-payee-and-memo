@@ -6,7 +6,7 @@ kotlinxSerialization = "1.6.2"
 kotlinxCoroutines = "1.7.3"
 ktor = "3.2.0"
 kermit = "2.0.2"
-logback = "1.4.11"
+logback = "1.5.18"
 kotlinxDatetime = "0.4.1"
 clikt = "4.2.1"
 
