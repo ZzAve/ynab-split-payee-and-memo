@@ -12,11 +12,11 @@ This application helps you clean up your YNAB transactions by:
 2. Parsing the original description (splitting by " - ")
 3. Updating transactions with separated Payee and Memo fields
 
-## Why is this useful
+## Why is this useful?
 
-When using linked accounts and direct import for transactions into YNAB from some banks (e.g. bunq and Knab in the Netherlands), the transaction descriptions often contain both the merchant name
-and additional information about the purchase. For example, "AMAZON.COM - BOOKS" contains both the merchant (AMAZON.COM)
-and what was purchased (BOOKS).
+When using linked accounts and direct import for transactions into YNAB from some banks (e.g. bunq and Knab in the
+Netherlands), the transaction descriptions often contain both the merchant name and additional information about the
+purchase. For example, "AMAZON.COM - BOOKS" contains both the merchant (AMAZON.COM) and what was purchased (BOOKS).
 
 By default, YNAB places this entire string in the Payee field, which can make your transaction list cluttered and harder
 to categorize or search. This application automatically:

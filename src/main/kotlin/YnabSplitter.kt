@@ -56,7 +56,7 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             doRun()
         } catch (e: Exception) {
             logger.error("Failed to run", e)
-            Abort()
+            throw Abort()
         }
     }
 
