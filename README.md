@@ -47,7 +47,7 @@ If there's no dash in the import payee name, the entire name becomes the payee a
 - YNAB Personal Access Token (get it from your YNAB account settings)
 - Docker (for containerized deployment) or Java 21+ (for running the JAR directly)
 
-> ℹ️ The YNAB api has a ratelimit per access token in order to prevent misuse or poorly configured scripts
+> ℹ️ The YNAB api has a ratelimit per access token to prevent misuse or poorly configured scripts
 >
 > More info on their [api documentation site](https://api.ynab.com/#rate-limiting).
 
