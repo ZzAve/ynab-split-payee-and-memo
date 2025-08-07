@@ -1,11 +1,40 @@
 <configuration>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} %-5level --- [%15.15thread] %-40.40logger{39} : %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="STDOUT" />
-    </root>
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- The log file will be created inside the container at /app/logs/ -->
+        <file>./logs/ynab-split-payee-and-memo.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>test.%i.log</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>1</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>5MB</maxFileSize>
+        </triggeringPolicy>
+            df            main
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} %-5level --- [%15.15thread] %-40.40logger{39} : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <if condition='"FILE".equalsIgnoreCase(property("YNAB_LOG"))'>
+        <then>
+            <root level="info">
+                <appender-ref ref="FILE"/>
+            </root>
+        </then>
+        <else>
+            <root level="info">
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </else>
+    </if>
+
 </configuration>

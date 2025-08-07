@@ -1,31 +1,29 @@
 [versions]
-kotlin = "2.1.21"
-jib = "3.4.5"
-shadow = "8.1.1"
-kotlinxSerialization = "1.6.2"
-kotlinxCoroutines = "1.7.3"
-ktor = "3.2.0"
-kermit = "2.0.2"
-logback = "1.4.11"
-kotlinxDatetime = "0.4.1"
 clikt = "4.2.1"
+janino = "3.1.12"
+kotlin = "2.1.21"
+kotlinxCoroutines = "1.7.3"
+kotlinxDatetime = "0.4.1"
+kotlinxSerialization = "1.6.2"
+ktor = "3.2.0"
+logback = "1.5.13"
+shadow = "8.1.1"
 
 [libraries]
+clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
+janino = {group="org.codehaus.janino", name ="janino", version.ref ="janino"}
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib" }
-kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio-jvm", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
-kermit = { group = "co.touchlab", name = "kermit", version.ref = "kermit" }
+ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
-kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
-clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

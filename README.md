@@ -12,11 +12,11 @@ This application helps you clean up your YNAB transactions by:
 2. Parsing the original description (splitting by " - ")
 3. Updating transactions with separated Payee and Memo fields
 
-## Why is this useful
+## Why is this useful?
 
-When using linked accounts and direct import for transactions into YNAB from some banks (e.g. bunq and Knab in the Netherlands), the transaction descriptions often contain both the merchant name
-and additional information about the purchase. For example, "AMAZON.COM - BOOKS" contains both the merchant (AMAZON.COM)
-and what was purchased (BOOKS).
+When using linked accounts and direct import for transactions into YNAB from some banks (e.g. bunq and Knab in the
+Netherlands), the transaction descriptions often contain both the merchant name and additional information about the
+purchase. For example, "AMAZON.COM - BOOKS" contains both the merchant (AMAZON.COM) and what was purchased (BOOKS).
 
 By default, YNAB places this entire string in the Payee field, which can make your transaction list cluttered and harder
 to categorize or search. This application automatically:
@@ -47,7 +47,7 @@ If there's no dash in the import payee name, the entire name becomes the payee a
 - YNAB Personal Access Token (get it from your YNAB account settings)
 - Docker (for containerized deployment) or Java 21+ (for running the JAR directly)
 
-> ℹ️ The YNAB api has a ratelimit per access token in order to prevent misuse or poorly configured scripts
+> ℹ️ The YNAB api has a ratelimit per access token to prevent misuse or poorly configured scripts
 >
 > More info on their [api documentation site](https://api.ynab.com/#rate-limiting).
 
@@ -109,6 +109,100 @@ Using environment variables instead of command-line arguments:
 ```bash
 docker run --rm -e YNAB_TOKEN=YOUR_YNAB_TOKEN -e YNAB_BUDGET_ID=BUDGET_ID -e YNAB_ACCOUNT_ID=ACCOUNT_ID zzave/ynab-split-payee
 ```
+
+### Running with Docker on macOS
+
+To run the application in a Docker container on your macOS system:
+
+1. Make sure Docker Desktop for Mac is installed and running
+2. Build the Docker image (if you haven't already):
+   ```bash
+   docker build -t zzave/ynab-split-payee .
+   ```
+3. Run the container with your YNAB token:
+   ```bash
+   docker run --rm zzave/ynab-split-payee --token YOUR_YNAB_TOKEN
+   ```
+
+### Setting Up a Cron Job on macOS
+
+To automatically run the application on a schedule, you can set up a cron job on macOS:
+
+1. Create a shell script to run the Docker container. Create a file named `run-ynab-splitter.sh` in a location of your choice (e.g., `~/scripts/`):
+   ```bash
+   #!/bin/bash
+
+   # Path to your Docker executable
+   DOCKER=/usr/local/bin/docker
+
+   # Your YNAB token
+   YNAB_TOKEN=YOUR_YNAB_TOKEN
+
+   # Optional: Budget ID and Account ID
+   # YNAB_BUDGET_ID=your-budget-id
+   # YNAB_ACCOUNT_ID=your-account-id
+
+   # Run the Docker container
+   $DOCKER run --rm zzave/ynab-split-payee \
+     --token $YNAB_TOKEN \
+     --days-back 7 \
+     # Uncomment if you want to use specific budget/account
+     # --budget-id $YNAB_BUDGET_ID \
+     # --account-id $YNAB_ACCOUNT_ID
+
+   echo "YNAB Split Payee and Memo completed at $(date)"
+   ```
+
+2. Make the script executable:
+   ```bash
+   chmod +x ~/scripts/run-ynab-splitter.sh
+   ```
+
+3. Open your crontab file for editing:
+   ```bash
+   crontab -e
+   ```
+
+4. Add a line to run the script on your desired schedule. For example, to run it every day at 8 AM:
+   ```
+   0 8 * * * ~/scripts/run-ynab-splitter.sh >> ~/ynab-splitter.log 2>&1
+   ```
+
+   Or to run it every Monday at 9 AM:
+   ```
+   0 9 * * 1 ~/scripts/run-ynab-splitter.sh >> ~/ynab-splitter.log 2>&1
+   ```
+
+5. Save and exit the editor.
+
+The cron job will now run automatically according to the schedule you set. The output will be logged to `~/ynab-splitter.log`.
+
+### Disabling the Cron Job
+
+To temporarily disable the cron job:
+
+1. Open your crontab file for editing:
+   ```bash
+   crontab -e
+   ```
+
+2. Comment out the line by adding a `#` at the beginning:
+   ```
+   # 0 8 * * * ~/scripts/run-ynab-splitter.sh >> ~/ynab-splitter.log 2>&1
+   ```
+
+3. Save and exit the editor.
+
+To permanently remove the cron job:
+
+1. Open your crontab file for editing:
+   ```bash
+   crontab -e
+   ```
+
+2. Delete the line completely.
+
+3. Save and exit the editor.
 
 ### Customizing the Parsing Logic
 

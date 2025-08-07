@@ -1,34 +1,36 @@
-## First stage, build the custom JRE
-#FROM eclipse-temurin:21-jdk-alpine AS jre-builder
-#
-#RUN mkdir /opt/app
-#
-#WORKDIR /opt/app
-#
-## Build small JRE image
-#RUN "$JAVA_HOME"/bin/jlink \
-#         --verbose \
-#         --add-modules ALL-MODULE-PATH \
-#         --strip-debug \
-#         --no-man-pages \
-#         --no-header-files \
-#         --compress=2 \
-#         --output /optimized-jdk-21
+# First stage, build the custom JRE
+FROM eclipse-temurin:21-jdk-alpine AS jre-builder
+
+RUN mkdir /opt/app
+
+WORKDIR /opt/app
+
+# Build small JRE image
+RUN "$JAVA_HOME"/bin/jlink \
+         --verbose \
+         --add-modules ALL-MODULE-PATH \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress=2 \
+         --output /optimized-jdk-21
 
 # Second stage, build the application
 FROM eclipse-temurin:21-jdk-alpine AS build
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN ./gradlew shadowJar --no-daemon
+#RUN ./gradlew shadowJar --no-daemon
+COPY ./build/libs/ /home/gradle/src/build/libs/
 
-# Third stage, Use the custom JRE and build the app image  
-#FROM alpine:3.22.0
-#ENV JAVA_HOME=/opt/jdk/jdk-21
-#ENV PATH="${JAVA_HOME}/bin:${PATH}"
-#
-## copy JRE from the base image
-#COPY --from=jre-builder /optimized-jdk-21 "$JAVA_HOME"
-FROM eclipse-temurin:21-jre-alpine
+
+# Third stage, Use the custom JRE and build the app image
+FROM alpine:3.22.0
+ENV JAVA_HOME=/opt/jdk/jdk-21
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# copy JRE from the base image
+COPY --from=jre-builder /optimized-jdk-21 "$JAVA_HOME"
+#FROM eclipse-temurin:21-jre-alpine
 
 # Add app user
 ARG APPLICATION_USER=ynab
