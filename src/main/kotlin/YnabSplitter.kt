@@ -61,8 +61,13 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
     }
 
     private fun doRun() {
-        runBlocking<Unit> {
+        runBlocking {
+            logger.info("")
+            logger.info("=====================================")
+            logger.info("=====================================")
             logger.info("Starting YNAB Split Payee and Memo")
+            logger.info("=====================================")
+            logger.info("=====================================")
             logger.info("Token: ${token.take(5)}...")
             logger.info("Budget ID: ${budgetId ?: "default"}")
             logger.info("Account ID: ${accountId ?: "all"}")

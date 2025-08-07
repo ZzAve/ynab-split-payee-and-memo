@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
 calculate_last_successful_run () {
     local LAST_SUCCESS="$1"
     local TIME_AGO="unknown time ago"
@@ -26,11 +28,11 @@ calculate_last_successful_run () {
     echo "${TIME_AGO}"
 }
 
-LOG_DIR="$(pwd)/logs"
- Run the Docker container
+LOG_DIR="${SCRIPT_DIR}/logs"
+# Run the Docker container
 docker run \
   -v "${LOG_DIR}:/app/logs" \
-  --env-file .env \
+  --env-file "${SCRIPT_DIR}/.env" \
   --rm --name ynab-updater \
   zzave/ynab-split-payee:0.0.1
 
@@ -38,23 +40,23 @@ RESULT="$?"
 if [ "$RESULT" -eq 0 ]; then
   echo "YNAB Split Payee and Memo completed successfully"
   date -u +"%Y-%m-%dT%H:%M:%SZ" > .last_successful_run
-  echo "0" > .failure_count
+  echo "0" > "${SCRIPT_DIR}/.failure_count"
   echo "Consecutive failures reset to 0"
 
 else
-  LAST_SUCCESS=$(cat .last_successful_run)
+  LAST_SUCCESS=$(cat "${SCRIPT_DIR}/.last_successful_run")
   TIME_AGO="$(calculate_last_successful_run "${LAST_SUCCESS}")"
 
   # Update failure count
-  if [ -f .failure_count ]; then
-    COUNT=$(cat .failure_count)
+  if [ -f "${SCRIPT_DIR}/.failure_count" ]; then
+    COUNT=$(cat "${SCRIPT_DIR}/.failure_count")
     # Increment the count
     COUNT=$((COUNT + 1))
   else
     # Initialize count if file doesn't exist
     COUNT=1
   fi
-  echo "$COUNT" > .failure_count
+  echo "$COUNT" > "${SCRIPT_DIR}/.failure_count"
   echo "Consecutive failures: $COUNT"
 
   echo "RESULT: '$TIME_AGO'"
