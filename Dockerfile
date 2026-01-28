@@ -24,7 +24,7 @@ COPY ./build/libs/ /home/gradle/src/build/libs/
 
 
 # Third stage, Use the custom JRE and build the app image
-FROM alpine:3.22.0
+FROM alpine:3.23.3
 ENV JAVA_HOME=/opt/jdk/jdk-21
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
