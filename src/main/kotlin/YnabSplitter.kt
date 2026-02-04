@@ -187,18 +187,16 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             return null
         }
 
-        val split = importPayeeName.split(" - ", limit = 2)
+        val split = importPayeeName.split("-", limit = 2)
 
         val newPayee =
-            split.firstOrNull() ?: return null.also { logger.info("No payee name found in transaction: $id") }
+            split.firstOrNull()?.trim() ?: return null.also { logger.info("No payee name found in transaction: $id") }
+        val memoFromPayee = split.getOrNull(1)
         val newMemo =
-            if (memo == null && split.getOrNull(1) == null) {
-                null
-            } else {
-                val oldMemoPart = memo?.let { "$it - " } ?: ""
-                val newMemoPart = split.getOrElse(1) { "" }
-
-                oldMemoPart + newMemoPart
+            when {
+                memoFromPayee.isNullOrBlank() -> memo
+                memo == null -> null
+                else -> "$memo - ${memoFromPayee.trim()}"
             }
 
         if (payeeName == newPayee && memo == newMemo) {
