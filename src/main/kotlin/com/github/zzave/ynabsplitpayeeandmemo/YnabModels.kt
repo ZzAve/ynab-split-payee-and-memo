@@ -1,3 +1,5 @@
+package com.github.zzave.ynabsplitpayeeandmemo
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -8,13 +10,13 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class YnabResponse<T>(
-    val data: T
+    val data: T,
 )
 
 @Serializable
 data class BudgetSummaryResponse(
     val budgets: List<BudgetSummary>,
-    @SerialName("default_budget") val defaultBudget: BudgetSummary? = null
+    @SerialName("default_budget") val defaultBudget: BudgetSummary? = null,
 )
 
 @Serializable
@@ -25,12 +27,12 @@ data class BudgetSummary(
     @SerialName("first_month") val firstMonth: String? = null,
     @SerialName("last_month") val lastMonth: String? = null,
     @SerialName("date_format") val dateFormat: DateFormat? = null,
-    @SerialName("currency_format") val currencyFormat: CurrencyFormat? = null
+    @SerialName("currency_format") val currencyFormat: CurrencyFormat? = null,
 )
 
 @Serializable
 data class DateFormat(
-    val format: String
+    val format: String,
 )
 
 @Serializable
@@ -42,18 +44,18 @@ data class CurrencyFormat(
     @SerialName("symbol_first") val symbolFirst: Boolean,
     @SerialName("group_separator") val groupSeparator: String,
     @SerialName("currency_symbol") val currencySymbol: String,
-    @SerialName("display_symbol") val displaySymbol: Boolean
+    @SerialName("display_symbol") val displaySymbol: Boolean,
 )
 
 @Serializable
 data class TransactionsResponse(
     val transactions: List<Transaction>,
-    @SerialName("server_knowledge") val serverKnowledge: Long? = null
+    @SerialName("server_knowledge") val serverKnowledge: Long? = null,
 )
 
 @Serializable
 data class TransactionResponse(
-    val transaction: Transaction
+    val transaction: Transaction,
 )
 
 @Serializable
@@ -74,7 +76,7 @@ data class Transaction(
     @SerialName("flag_color") val flagColor: String? = null,
     @SerialName("import_id") val importId: String? = null,
     @SerialName("import_payee_name") val importPayeeName: String? = null,
-    @SerialName("import_memo") val importMemo: String? = null
+    @SerialName("import_memo") val importMemo: String? = null,
 )
 
 @Serializable
@@ -88,17 +90,17 @@ data class TransactionUpdate(
     val memo: String? = null,
     val cleared: String? = null,
     val approved: Boolean? = null,
-    @SerialName("flag_color") val flagColor: String? = null
+    @SerialName("flag_color") val flagColor: String? = null,
 )
 
 @Serializable
 data class SaveTransactionWrapper(
-    val transaction: TransactionUpdate
+    val transaction: TransactionUpdate,
 )
 
 @Serializable
 data class PatchTransactionsWrapper(
-    val transactions: List<SaveTransactionWithId>
+    val transactions: List<SaveTransactionWithId>,
 )
 
 @Serializable
@@ -113,12 +115,12 @@ data class SaveTransactionWithId(
     val memo: String?,
     val cleared: String?,
     val approved: Boolean?,
-    @SerialName("flag_color") val flagColor: String?
+    @SerialName("flag_color") val flagColor: String?,
 )
 
 @Serializable
 data class SaveTransactionsResponse(
     val transactions: List<Transaction>,
     @SerialName("duplicate_import_ids") val duplicateImportIds: List<String>? = null,
-    @SerialName("server_knowledge") val serverKnowledge: Long? = null
+    @SerialName("server_knowledge") val serverKnowledge: Long? = null,
 )
