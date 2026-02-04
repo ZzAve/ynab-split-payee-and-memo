@@ -17,10 +17,12 @@ RUN "$JAVA_HOME"/bin/jlink \
 
 # Second stage, build the application
 FROM eclipse-temurin:21-jdk-alpine AS build
-COPY --chown=gradle:gradle . /home/gradle/src
+COPY --chown=gradle:gradle ./gradlew /home/gradle/src/
 WORKDIR /home/gradle/src
-#RUN ./gradlew shadowJar --no-daemon
-COPY ./build/libs/ /home/gradle/src/build/libs/
+COPY --chown=gradle:gradle gradle/ /home/gradle/src/gradle/
+RUN ./gradlew
+COPY --chown=gradle:gradle . /home/gradle/src
+RUN ./gradlew shadowJar --no-daemon --no-configuration-cache
 
 
 # Third stage, Use the custom JRE and build the app image
