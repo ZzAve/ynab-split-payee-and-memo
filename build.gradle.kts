@@ -1,5 +1,3 @@
-import groovy.xml.dom.DOMCategory.attributes
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)

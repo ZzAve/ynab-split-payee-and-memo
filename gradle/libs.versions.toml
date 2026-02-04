@@ -7,7 +7,7 @@ kotlinxDatetime = "0.4.1"
 kotlinxSerialization = "1.6.2"
 ktor = "3.2.0"
 logback = "1.5.13"
-shadow = "8.1.1"
+shadow = "9.3.1"
 
 [libraries]
 clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
@@ -26,4 +26,5 @@ logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "l
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+
