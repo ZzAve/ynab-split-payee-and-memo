@@ -6,50 +6,52 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import org.slf4j.LoggerFactory
+import kotlin.time.Clock
 
 private val logger = LoggerFactory.getLogger("Main")
 
 class YnabSplitPayeeAndMemo : CliktCommand() {
     private val token by option(
-        "-t", "--token",
+        "-t",
+        "--token",
         help = "YNAB Personal Access Token",
-        envvar = "YNAB_TOKEN"
+        envvar = "YNAB_TOKEN",
     ).required()
 
     private val budgetId by option(
-        "-b", "--budget-id",
+        "-b",
+        "--budget-id",
         help = "YNAB Budget ID (default: last used budget)",
-        envvar = "YNAB_BUDGET_ID"
+        envvar = "YNAB_BUDGET_ID",
     )
 
     private val accountId by option(
-        "-a", "--account-id",
+        "-a",
+        "--account-id",
         help = "YNAB Account ID (default: all accounts)",
-        envvar = "YNAB_ACCOUNT_ID"
+        envvar = "YNAB_ACCOUNT_ID",
     )
 
     private val dryRun by option(
         "--dry-run",
-        help = "Don't actually update transactions, just show what would be updated"
+        help = "Don't actually update transactions, just show what would be updated",
     ).flag()
 
     private val daysBack by option(
-        "-d", "--days-back",
-        help = "Number of days to look back for transactions (default: 30)"
+        "-d",
+        "--days-back",
+        help = "Number of days to look back for transactions (default: 30)",
     ).int().default(30)
 
     private val onlyUnapproved by option(
         "--only-unapproved",
-        help = "Only process unapproved transactions"
-    )
-        .flag("--all", default = true)
+        help = "Only process unapproved transactions",
+    ).flag("--all", default = true)
 
     override fun run() {
         try {
@@ -78,37 +80,36 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             val ynabClient = YnabClient(token)
 
             // If no budget ID is provided, use the last used budget
-            val effectiveBudgetId = budgetId ?: run {
-                logger.info("No budget ID provided, fetching default budget")
-                val defaultBudget = ynabClient.getDefaultBudget()
-                logger.info("Using budget: ${defaultBudget.name} (${defaultBudget.id})")
-                defaultBudget.id
-            }
+            val effectiveBudgetId =
+                budgetId ?: run {
+                    logger.info("No budget ID provided, fetching default budget")
+                    val defaultBudget = ynabClient.getDefaultBudget()
+                    logger.info("Using budget: ${defaultBudget.name} (${defaultBudget.id})")
+                    defaultBudget.id
+                }
 
             // Calculate the date daysBack days ago
             val now = Clock.System.now()
             val today = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
-            val sinceDate = LocalDate(
-                year = today.year,
-                monthNumber = today.monthNumber,
-                dayOfMonth = today.dayOfMonth
-            ).minus(daysBack, DateTimeUnit.DAY)
+            val sinceDate = today.minus(daysBack, DateTimeUnit.DAY)
 
             // Fetch transactions
-            val transactions = ynabClient.getTransactions(
-                budgetId = effectiveBudgetId,
-                accountId = accountId,
-                sinceDate = sinceDate,
-                onlyUnapproved = onlyUnapproved,
-            )
+            val transactions =
+                ynabClient.getTransactions(
+                    budgetId = effectiveBudgetId,
+                    accountId = accountId,
+                    sinceDate = sinceDate,
+                    onlyUnapproved = onlyUnapproved,
+                )
 
             logger.info("Found ${transactions.size} transactions")
 
             // Process transactions
-            val transactionsToUpdate = transactions.filter {
-                // Filter transactions that need processing
-                !it.payeeName.isNullOrBlank() && !it.importPayeeName.isNullOrBlank()
-            }
+            val transactionsToUpdate =
+                transactions.filter {
+                    // Filter transactions that need processing
+                    !it.payeeName.isNullOrBlank() && !it.importPayeeName.isNullOrBlank()
+                }
 
             logger.info("Found ${transactionsToUpdate.size} transactions to update")
 
@@ -130,7 +131,7 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
 
     private suspend fun List<Transaction>.processTransactionBatch(
         ynabClient: YnabClient,
-        budgetId: String
+        budgetId: String,
     ) {
         val transactionsToUpdateBatch = mutableListOf<SaveTransactionWithId>()
 
@@ -157,15 +158,16 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
                     cleared = transaction.cleared,
                     approved = transaction.approved,
                     flagColor = transaction.flagColor,
-                )
+                ),
             )
         }
 
         if (!dryRun && transactionsToUpdateBatch.isNotEmpty()) {
-            val updatedTransactions = ynabClient.updateTransactions(
-                budgetId = budgetId,
-                transactions = transactionsToUpdateBatch
-            )
+            val updatedTransactions =
+                ynabClient.updateTransactions(
+                    budgetId = budgetId,
+                    transactions = transactionsToUpdateBatch,
+                )
             logger.info("  Updated ${updatedTransactions.size} transactions in batch!")
         }
     }
@@ -185,24 +187,23 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             return null
         }
 
-
         val split = importPayeeName.split(" - ", limit = 2)
 
         val newPayee =
             split.firstOrNull() ?: return null.also { logger.info("No payee name found in transaction: $id") }
-        val newMemo = if (memo == null && split.getOrNull(1) == null) {
-            null
-        } else {
-            val oldMemoPart = memo?.let { "$it - " } ?: ""
-            val newMemoPart = split.getOrElse(1) { "" }
+        val newMemo =
+            if (memo == null && split.getOrNull(1) == null) {
+                null
+            } else {
+                val oldMemoPart = memo?.let { "$it - " } ?: ""
+                val newMemoPart = split.getOrElse(1) { "" }
 
-            oldMemoPart + newMemoPart
-        }
+                oldMemoPart + newMemoPart
+            }
 
         if (payeeName == newPayee && memo == newMemo) {
             return null.also { logger.info("Payee name and memo are unchanged, skipping transaction: $id") }
         }
         return NewPayeeAndMemo(payee = newPayee, memo = newMemo)
-
     }
 }
