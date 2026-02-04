@@ -13,13 +13,10 @@ repositories {
     maven("https://jitpack.io")
 }
 
-
-
 // Configure the application
 application {
     mainClass.set("MainKt")
 }
-
 
 kotlin {
     jvmToolchain(21)
