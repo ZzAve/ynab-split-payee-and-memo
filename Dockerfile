@@ -22,7 +22,7 @@ WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle gradle/ /home/gradle/src/gradle/
 RUN ./gradlew
 COPY --chown=gradle:gradle . /home/gradle/src
-RUN ./gradlew shadowJar --no-daemon --no-configuration-cache --no-cache
+RUN ./gradlew shadowJar --no-daemon --no-configuration-cache
 
 
 # Third stage, Use the custom JRE and build the app image
