@@ -1,9 +1,11 @@
-import org.slf4j.LoggerFactory
+package com.github.zzave.ynabsplitpayeeandmemo
+
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -17,30 +19,35 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 
 /**
  * Client for the YNAB API.
  * Based on the YNAB API documentation: https://api.ynab.com/
  */
-class YnabClient(private val token: String) {
+class YnabClient(
+    private val token: String,
+) {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val baseUrl = "https://api.ynab.com/v1"
 
-    private val client = HttpClient {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-                encodeDefaults = true
-                explicitNulls = false
-            })
-
+    private val client =
+        HttpClient {
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        ignoreUnknownKeys = true
+                        isLenient = true
+                        encodeDefaults = true
+                        explicitNulls = false
+                    },
+                )
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.INFO
+            }
         }
-        install(Logging) {
-            logger = io.ktor.client.plugins.logging.Logger.DEFAULT
-            level = LogLevel.INFO
-        }
-    }
 
     /**
      * Get the default budget ID.
@@ -49,9 +56,10 @@ class YnabClient(private val token: String) {
     suspend fun getDefaultBudget(): BudgetSummary {
         logger.info("Fetching budgets")
 
-        val response = client.get("$baseUrl/budgets") {
-            header("Authorization", "Bearer $token")
-        }
+        val response =
+            client.get("$baseUrl/budgets") {
+                header("Authorization", "Bearer $token")
+            }
 
         if (response.status != HttpStatusCode.OK) {
             throw Exception("Failed to fetch budgets: ${response.status}")
@@ -73,7 +81,7 @@ class YnabClient(private val token: String) {
 
     /**
      * Get transactions for a budget.
-     * 
+     *
      * @param budgetId The budget ID
      * @param accountId Optional account ID to filter transactions
      * @param sinceDate Optional date to filter transactions since
@@ -83,25 +91,28 @@ class YnabClient(private val token: String) {
         budgetId: String,
         accountId: String?,
         sinceDate: LocalDate?,
-        onlyUnapproved: Boolean
+        onlyUnapproved: Boolean,
     ): List<Transaction> {
         logger.info("Fetching transactions for budget $budgetId")
 
-        val url = if (accountId != null) {
-            "$baseUrl/budgets/$budgetId/accounts/$accountId/transactions"
-        } else {
-            "$baseUrl/budgets/$budgetId/transactions"
-        }
-
-        val response = client.get(url) {
-            header("Authorization", "Bearer $token")
-            if (sinceDate != null) {
-                parameter("since_date", sinceDate.toString())
+        val url =
+            if (accountId != null) {
+                "$baseUrl/budgets/$budgetId/accounts/$accountId/transactions"
+            } else {
+                "$baseUrl/budgets/$budgetId/transactions"
             }
 
-            if (onlyUnapproved)
-                parameter("type", "unapproved")
-        }
+        val response =
+            client.get(url) {
+                header("Authorization", "Bearer $token")
+                if (sinceDate != null) {
+                    parameter("since_date", sinceDate.toString())
+                }
+
+                if (onlyUnapproved) {
+                    parameter("type", "unapproved")
+                }
+            }
 
         if (response.status != HttpStatusCode.OK) {
             throw Exception("Failed to fetch transactions: ${response.status}")
@@ -114,25 +125,26 @@ class YnabClient(private val token: String) {
 
     /**
      * Update multiple transactions in a batch.
-     * 
+     *
      * @param budgetId The budget ID
      * @param transactions List of transactions to update
      * @return List of updated transactions
      */
     suspend fun updateTransactions(
         budgetId: String,
-        transactions: List<SaveTransactionWithId>
+        transactions: List<SaveTransactionWithId>,
     ): List<Transaction> {
         logger.info("Batch updating ${transactions.size} transactions")
 
         val wrapper = PatchTransactionsWrapper(transactions)
 
-        val response = client.patch("$baseUrl/budgets/$budgetId/transactions") {
-            header("Authorization", "Bearer $token")
-            contentType(ContentType.Application.Json)
-            setBody(wrapper)
-            println(this.body)
-        }
+        val response =
+            client.patch("$baseUrl/budgets/$budgetId/transactions") {
+                header("Authorization", "Bearer $token")
+                contentType(ContentType.Application.Json)
+                setBody(wrapper)
+                println(this.body)
+            }
 
         if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.fromValue(209)) {
             throw Exception("Failed to update transactions: ${response.status}, ${response.bodyAsText()}")
