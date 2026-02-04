@@ -30,7 +30,7 @@ calculate_last_successful_run () {
 
 LOG_DIR="${SCRIPT_DIR}/logs"
 # Run the Docker container
-docker run \
+/usr/local/bin/docker run \
   -v "${LOG_DIR}:/app/logs" \
   --env-file "${SCRIPT_DIR}/.env" \
   --rm --name ynab-updater \
@@ -39,10 +39,13 @@ docker run \
 RESULT="$?"
 if [ "$RESULT" -eq 0 ]; then
   echo "YNAB Split Payee and Memo completed successfully"
-  date -u +"%Y-%m-%dT%H:%M:%SZ" > .last_successful_run
+  date -u +"%Y-%m-%dT%H:%M:%SZ" > "${SCRIPT_DIR}/.last_successful_run"
   echo "0" > "${SCRIPT_DIR}/.failure_count"
   echo "Consecutive failures reset to 0"
 
+  script="display notification \"Check the logs for details: ${LOG_DIR}\" with title \"Updating YNAB succeeded\" subtitle \"Hooray\""
+  echo "Script: ${script}"
+  osascript -e "${script}"
 else
   LAST_SUCCESS=$(cat "${SCRIPT_DIR}/.last_successful_run")
   TIME_AGO="$(calculate_last_successful_run "${LAST_SUCCESS}")"
@@ -61,7 +64,7 @@ else
 
   echo "RESULT: '$TIME_AGO'"
   script="display notification \"Check the logs for details: ${LOG_DIR}\" with title \"Updating YNAB failed (${COUNT})\" subtitle \"Last success: ${TIME_AGO} (${LAST_SUCCESS})\""
-    echo "Script: ${script}"
-    echo "YNAB Split Payee and Memo failed with exit code $RESULT"
-    osascript -e "${script}"
+  echo "Script: ${script}"
+  echo "YNAB Split Payee and Memo failed with exit code $RESULT"
+  osascript -e "${script}"
 fi
