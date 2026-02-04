@@ -8,7 +8,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -16,6 +15,7 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import org.slf4j.LoggerFactory
 import kotlin.collections.isNotEmpty
+import kotlin.time.Clock
 
 class YnabSplitPayeeAndMemo : CliktCommand() {
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -137,11 +137,7 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
         val now = Clock.System.now()
         val today = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
         val sinceDate =
-            LocalDate(
-                year = today.year,
-                monthNumber = today.monthNumber,
-                dayOfMonth = today.dayOfMonth,
-            ).minus(daysBack, DateTimeUnit.DAY)
+            today.minus(daysBack, DateTimeUnit.DAY)
         return sinceDate
     }
 
