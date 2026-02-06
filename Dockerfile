@@ -1,5 +1,5 @@
 # First stage, build the custom JRE
-FROM eclipse-temurin:21-jdk-alpine AS jre-builder
+FROM eclipse-temurin:25.0.2_10-jdk-alpine AS jre-builder
 
 RUN mkdir /opt/app
 
@@ -16,7 +16,7 @@ RUN "$JAVA_HOME"/bin/jlink \
          --output /optimized-jdk-21
 
 # Second stage, build the application
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:25.0.2_10-jdk-alpine AS build
 COPY --chown=gradle:gradle ./gradlew /home/gradle/src/
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle gradle/ /home/gradle/src/gradle/
