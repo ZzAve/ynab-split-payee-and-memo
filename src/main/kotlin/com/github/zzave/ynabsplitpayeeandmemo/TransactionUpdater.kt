@@ -64,7 +64,7 @@ private fun Transaction.extractNewPayeeAndMemo(): NewPayeeAndMemo? {
     val newMemo =
         when {
             memoFromPayee.isNullOrBlank() -> memo
-            memo == null -> null
+            memo == null -> memoFromPayee.trim()
             else -> "$memo - ${memoFromPayee.trim()}"
         }
 

@@ -55,4 +55,12 @@ dependencies {
 
     // Clikt for command-line interface
     implementation(libs.clikt)
+
+    // Testing
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.assertions.core)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
