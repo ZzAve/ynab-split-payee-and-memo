@@ -77,6 +77,21 @@ class TransactionUpdaterTest :
                 result[0].memo shouldBe "Maintenance spend (paint, furniture, etc.) - IBAN: NL00BANK0123456789"
             }
 
+            test("should only split payee if - is surrounded by whitespace") {
+                val transactions =
+                    listOf(
+                        transaction(
+                            payeeName = "Payee-with-dash",
+                            importPayeeName = "Payee-with-dash",
+                            memo = null,
+                        ),
+                    )
+
+                val result = transactions.findTransactionsToUpdate()
+
+                result shouldHaveSize 0
+            }
+
             test("full payee with description and IBAN extracts memo when original memo is null") {
                 val payee = "John Doe - Maintenance spend (paint, furniture, etc.) (50/50 as agreed) - IBAN: NL00BANK0123456789"
                 val transactions =

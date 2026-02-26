@@ -56,7 +56,7 @@ private fun Transaction.extractNewPayeeAndMemo(): NewPayeeAndMemo? {
         return null
     }
 
-    val split = importPayeeName.split("-", limit = 2)
+    val split = importPayeeName.split(" - ", limit = 2)
 
     val newPayee =
         split.firstOrNull()?.trim() ?: return null.also { logger.info("No payee name found in transaction: $id") }
