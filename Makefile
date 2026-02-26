@@ -8,6 +8,15 @@ CURRENT_DIR := $(shell pwd)
 build:
 	./gradlew build
 
+test:
+	./gradlew test
+
+yolo:
+	./gradlew build -x test
+
+clean:
+	./gradlew clean
+
 docker: build
 	docker build -t ${docker_image_name}:${docker_image_version} .
 
