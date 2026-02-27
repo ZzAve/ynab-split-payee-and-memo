@@ -2,7 +2,7 @@
 
 
 docker_image_name = zzave/ynab-split-payee
-docker_image_version = 0-SNAPSHOT
+docker_image_version := $(shell ./gradlew -q printVersion)
 CURRENT_DIR := $(shell pwd)
 
 build:
