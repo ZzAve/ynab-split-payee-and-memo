@@ -1,22 +1,5 @@
-# First stage, build the custom JRE
-FROM eclipse-temurin:21-jdk-alpine AS jre-builder
-
-RUN mkdir /opt/app
-
-WORKDIR /opt/app
-
-# Build small JRE image
-RUN "$JAVA_HOME"/bin/jlink \
-         --verbose \
-         --add-modules ALL-MODULE-PATH \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
-         --output /optimized-jdk-21
-
-# Second stage, build the application
-FROM eclipse-temurin:21-jdk-alpine AS build
+# First stage, build the application
+FROM eclipse-temurin:25.0.2_10-jdk-alpine AS build
 COPY --chown=gradle:gradle ./gradlew /home/gradle/src/
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle gradle/ /home/gradle/src/gradle/
@@ -25,14 +8,34 @@ COPY --chown=gradle:gradle . /home/gradle/src
 RUN ./gradlew shadowJar --no-daemon --no-configuration-cache
 
 
-# Third stage, Use the custom JRE and build the app image
+# Second stage, build the custom JRE
+# JDK 25 (JEP 493) no longer ships jmods but jlink can still create custom
+# runtime images from the linkable runtime. We use jdeps to discover which
+# modules the fat JAR actually needs, then jlink to produce a minimal JRE.
+FROM eclipse-temurin:25.0.2_10-jdk-alpine AS jre-builder
+COPY --from=build /home/gradle/src/build/libs/*-all.jar /tmp/app.jar
+RUN MODULES=$("$JAVA_HOME"/bin/jdeps \
+         --print-module-deps \
+         --ignore-missing-deps \
+         --multi-release 25 \
+         /tmp/app.jar) && \
+    echo "Discovered modules: $MODULES" && \
+    "$JAVA_HOME"/bin/jlink \
+         --add-modules "$MODULES,jdk.crypto.ec" \
+         --strip-debug \
+         --no-man-pages \
+         --no-header-files \
+         --compress zip-6 \
+         --output /optimized-jre
+
+
+# Third stage, use the custom JRE and build the app image
 FROM alpine:3.22.0
-ENV JAVA_HOME=/opt/jdk/jdk-21
+ENV JAVA_HOME=/opt/jre
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
-# copy JRE from the base image
-COPY --from=jre-builder /optimized-jdk-21 "$JAVA_HOME"
-#FROM eclipse-temurin:21-jre-alpine
+# Copy JRE from the builder
+COPY --from=jre-builder /optimized-jre "$JAVA_HOME"
 
 # Add app user
 ARG APPLICATION_USER=ynab

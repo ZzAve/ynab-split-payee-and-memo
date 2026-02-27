@@ -45,7 +45,7 @@ If there's no dash in the import payee name, the entire name becomes the payee a
 ### Prerequisites
 
 - YNAB Personal Access Token (get it from your YNAB account settings)
-- Docker (for containerized deployment) or Java 21+ (for running the JAR directly)
+- Docker (for containerized deployment) or Java 25+ (for running the JAR directly)
 
 > ℹ️ The YNAB api has a ratelimit per access token to prevent misuse or poorly configured scripts
 >
@@ -216,7 +216,7 @@ After making changes, rebuild the application following the instructions in the 
 
 ### Prerequisites
 
-- JDK 21 or later
+- JDK 25 or later
 - Docker (for containerized builds)
 
 ### Building the JVM Application
@@ -244,13 +244,14 @@ a smaller image size.
 
 The application uses a multi-stage Docker build to create a lightweight container:
 
-1. The first stage builds a custom, optimized JRE using jlink, which includes only the necessary Java modules.
-2. The second stage creates a minimal Alpine Linux container with the optimized JRE and the application JAR.
-3. The application runs as a non-root user for improved security.
+1. The first stage compiles the application using the full JDK.
+2. The second stage uses `jdeps` to discover required modules and `jlink` to build a custom, optimized JRE.
+3. The third stage creates a minimal Alpine Linux container with the optimized JRE and the application JAR.
+4. The application runs as a non-root user for improved security.
 
 Benefits of this approach:
 
-- **Smaller Container Size**: The optimized JRE is much smaller than a full JDK or JRE.
+- **Smaller Container Size**: The optimized JRE includes only the modules the application needs.
 - **Faster Startup**: The container starts quickly due to the optimized JRE.
 - **Improved Security**: Running as a non-root user reduces the risk of container breakout.
 - **Simplified Deployment**: The container includes everything needed to run the application.
