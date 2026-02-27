@@ -245,13 +245,14 @@ a smaller image size.
 The application uses a multi-stage Docker build to create a lightweight container:
 
 1. The first stage compiles the application using the full JDK.
-2. The second stage uses the Eclipse Temurin JRE Alpine image as a minimal runtime.
-3. The application runs as a non-root user for improved security.
+2. The second stage uses `jdeps` to discover required modules and `jlink` to build a custom, optimized JRE.
+3. The third stage creates a minimal Alpine Linux container with the optimized JRE and the application JAR.
+4. The application runs as a non-root user for improved security.
 
 Benefits of this approach:
 
-- **Smaller Container Size**: The JRE Alpine base image is much smaller than a full JDK.
-- **Faster Startup**: The container starts quickly due to the lightweight runtime.
+- **Smaller Container Size**: The optimized JRE includes only the modules the application needs.
+- **Faster Startup**: The container starts quickly due to the optimized JRE.
 - **Improved Security**: Running as a non-root user reduces the risk of container breakout.
 - **Simplified Deployment**: The container includes everything needed to run the application.
 
