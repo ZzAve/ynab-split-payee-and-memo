@@ -20,7 +20,7 @@ fun List<Transaction>.findTransactionsToUpdate(): List<SaveTransactionWithId> {
             .extractNewPayeeAndMemo()
             ?.let { newPayeeAndMemo ->
 
-                logger.debug("  Transaction: {}", transaction.id)
+                logger.info("Updating transaction {}: '{}' -> '{}'", transaction.id, transaction.payeeName, newPayeeAndMemo.payee)
                 logger.debug("  Original payee: {}", transaction.payeeName)
                 logger.debug("  Import payee: {}", transaction.importPayeeName)
                 logger.debug("  New payee: {}", newPayeeAndMemo.payee)

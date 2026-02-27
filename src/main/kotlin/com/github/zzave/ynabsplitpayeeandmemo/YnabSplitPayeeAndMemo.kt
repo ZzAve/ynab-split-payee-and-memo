@@ -13,6 +13,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
+import ch.qos.logback.classic.Level
 import org.slf4j.LoggerFactory
 import kotlin.collections.isNotEmpty
 import kotlin.time.Clock
@@ -64,6 +65,13 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
         help = "Only process unapproved transactions",
     ).flag("--all", default = true)
 
+    private val verbose by option(
+        "-v",
+        "--verbose",
+        help = "Enable debug logging",
+        envvar = "YNAB_VERBOSE",
+    ).flag()
+
     override fun run() {
         try {
             doRun()
@@ -74,6 +82,11 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
     }
 
     private fun doRun() {
+        if (verbose) {
+            val appLogger = LoggerFactory.getLogger("com.github.zzave.ynabsplitpayeeandmemo") as ch.qos.logback.classic.Logger
+            appLogger.level = Level.DEBUG
+        }
+
         runBlocking {
             logger.info("")
             logger.info("=====================================")
