@@ -16,6 +16,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.slf4j.LoggerFactory
 import kotlin.collections.isNotEmpty
 import kotlin.time.Clock
+import kotlin.time.measureTimedValue
 
 class YnabSplitPayeeAndMemo : CliktCommand() {
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -147,15 +148,16 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
         sinceDate: LocalDate,
     ) {
         // Fetch transactions
-        val transactions =
+        val (transactions, fetchDuration) = measureTimedValue {
             ynabClient.getTransactions(
                 budgetId = budgetId,
                 accountId = accountId,
                 sinceDate = sinceDate,
                 onlyUnapproved = onlyUnapproved,
             )
+        }
 
-        logger.info("Found ${transactions.size} transactions")
+        logger.info("Found ${transactions.size} transactions (fetched in $fetchDuration)")
 
         // Process transactions in batches of 25
         val batchSize = 25
@@ -176,13 +178,21 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
     ) {
         val transactionsToUpdate = findTransactionsToUpdate()
 
-        if (!dryRun && transactionsToUpdate.isNotEmpty()) {
-            val updatedTransactions =
-                ynabClient.updateTransactions(
-                    budgetId = budgetId,
-                    transactions = transactionsToUpdate,
-                )
-            logger.info("  Updated ${updatedTransactions.size} transactions in batch!")
+        if (transactionsToUpdate.isEmpty()) {
+            return
         }
+
+        if (dryRun) {
+            logger.info("  [DRY RUN] Would update ${transactionsToUpdate.size} transactions, skipping API call")
+            return
+        }
+
+        val (updatedTransactions, updateDuration) = measureTimedValue {
+            ynabClient.updateTransactions(
+                budgetId = budgetId,
+                transactions = transactionsToUpdate,
+            )
+        }
+        logger.info("  Updated ${updatedTransactions.size} transactions in batch (took $updateDuration)")
     }
 }
