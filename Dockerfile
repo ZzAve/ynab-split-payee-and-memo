@@ -1,21 +1,4 @@
-# First stage, build the custom JRE
-FROM eclipse-temurin:25.0.2_10-jdk-alpine AS jre-builder
-
-RUN mkdir /opt/app
-
-WORKDIR /opt/app
-
-# Build small JRE image
-RUN "$JAVA_HOME"/bin/jlink \
-         --verbose \
-         --add-modules ALL-MODULE-PATH \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress zip-6 \
-         --output /optimized-jdk-25
-
-# Second stage, build the application
+# First stage, build the application
 FROM eclipse-temurin:25.0.2_10-jdk-alpine AS build
 COPY --chown=gradle:gradle ./gradlew /home/gradle/src/
 WORKDIR /home/gradle/src
@@ -25,14 +8,10 @@ COPY --chown=gradle:gradle . /home/gradle/src
 RUN ./gradlew shadowJar --no-daemon --no-configuration-cache
 
 
-# Third stage, Use the custom JRE and build the app image
-FROM alpine:3.22.0
-ENV JAVA_HOME=/opt/jdk/jdk-25
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
-
-# copy JRE from the base image
-COPY --from=jre-builder /optimized-jdk-25 "$JAVA_HOME"
-#FROM eclipse-temurin:25-jre-alpine
+# Second stage, build the app image
+# Note: JDK 25 (JEP 493) no longer ships jmods, so jlink custom JRE is not
+# supported with Temurin alpine images. Using the JRE base image instead.
+FROM eclipse-temurin:25.0.2_10-jre-alpine
 
 # Add app user
 ARG APPLICATION_USER=ynab
