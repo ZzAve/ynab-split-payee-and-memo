@@ -43,6 +43,74 @@ class TransactionUpdaterTest :
                 result[0].memo shouldBe "Maintenance spend at DIY store (50/50)"
             }
 
+            test("splits payee on dash when there's no memo in the import payee") {
+                val transactions =
+                    listOf(
+                        transaction(
+                            payeeName = "John Doe -",
+                            importPayeeName = "John Doe -",
+                            memo = null,
+                        ),
+                    )
+
+                val result = transactions.findTransactionsToUpdate()
+
+                result shouldHaveSize 1
+                result[0].payeeName shouldBe "John Doe"
+                result[0].memo shouldBe null
+            }
+
+            test("should not duplicate memo again") {
+                val transactions =
+                    listOf(
+                        transaction(
+                            payeeName = "John Doe - Maintenance spend at DIY store (50/50)",
+                            importPayeeName = "John Doe - Maintenance spend at DIY store (50/50)",
+                            memo = "Maintenance spend at DIY store (50/50)",
+                        ),
+                    )
+
+                val result = transactions.findTransactionsToUpdate()
+
+                result shouldHaveSize 1
+                result[0].payeeName shouldBe "John Doe"
+                result[0].memo shouldBe "Maintenance spend at DIY store (50/50)"
+            }
+
+            test("should not duplicate memo again 2") {
+                val transactions =
+                    listOf(
+                        transaction(
+                            payeeName = "John Doe - Maintenance spend at DIY store (50/50)",
+                            importPayeeName = "John Doe - Maintenance spend at DIY store (50/50)",
+                            memo = "Maintenance spend at DIY store (50/50) - Maintenance spend at DIY store (50/50)",
+                        ),
+                    )
+
+                val result = transactions.findTransactionsToUpdate()
+
+                result shouldHaveSize 1
+                result[0].payeeName shouldBe "John Doe"
+                result[0].memo shouldBe "Maintenance spend at DIY store (50/50)"
+            }
+
+            test("should not duplicate memo again 3") {
+                val transactions =
+                    listOf(
+                        transaction(
+                            payeeName = "John Doe - Maintenance spend at DIY store (50/50)",
+                            importPayeeName = "John Doe - Maintenance spend at DIY store (50/50)",
+                            memo = "just - testing - my - testing - my - testing",
+                        ),
+                    )
+
+                val result = transactions.findTransactionsToUpdate()
+
+                result shouldHaveSize 1
+                result[0].payeeName shouldBe "John Doe"
+                result[0].memo shouldBe "just - testing - my - testing"
+            }
+
             test("splits payee and appends to existing memo") {
                 val transactions =
                     listOf(
@@ -75,21 +143,6 @@ class TransactionUpdaterTest :
                 result shouldHaveSize 1
                 result[0].payeeName shouldBe "John Doe"
                 result[0].memo shouldBe "Maintenance spend (paint, furniture, etc.) - IBAN: NL00BANK0123456789"
-            }
-
-            test("should only split payee if - is surrounded by whitespace") {
-                val transactions =
-                    listOf(
-                        transaction(
-                            payeeName = "Payee-with-dash",
-                            importPayeeName = "Payee-with-dash",
-                            memo = null,
-                        ),
-                    )
-
-                val result = transactions.findTransactionsToUpdate()
-
-                result shouldHaveSize 0
             }
 
             test("full payee with description and IBAN extracts memo when original memo is null") {
@@ -153,6 +206,21 @@ class TransactionUpdaterTest :
                 val result = transactions.findTransactionsToUpdate()
 
                 result.shouldBeEmpty()
+            }
+
+            test("skips transaction when payee contains - without surrounding whitespace") {
+                val transactions =
+                    listOf(
+                        transaction(
+                            payeeName = "Payee-with-dash",
+                            importPayeeName = "Payee-with-dash",
+                            memo = null,
+                        ),
+                    )
+
+                val result = transactions.findTransactionsToUpdate()
+
+                result shouldHaveSize 0
             }
         }
     })
