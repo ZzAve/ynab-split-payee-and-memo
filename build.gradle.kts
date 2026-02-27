@@ -22,11 +22,44 @@ kotlin {
     jvmToolchain(25)
 }
 
+val generateBuildInfo by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/src/main/kotlin")
+    val projectVersion = project.version.toString()
+    outputs.dir(outputDir)
+    inputs.property("version", projectVersion)
+
+    doLast {
+        val dir = outputDir.get().asFile.resolve("com/github/zzave/ynabsplitpayeeandmemo")
+        dir.mkdirs()
+        dir.resolve("BuildInfo.kt").writeText(
+            """
+            |package com.github.zzave.ynabsplitpayeeandmemo
+            |
+            |object BuildInfo {
+            |    const val VERSION = "$projectVersion"
+            |}
+            """.trimMargin()
+        )
+    }
+}
+
+sourceSets.main {
+    kotlin.srcDir(generateBuildInfo.map { it.outputs.files.singleFile })
+}
+
 tasks.shadowJar {
     manifest {
         attributes["Main-Class"] = "MainKt"
+        attributes["Implementation-Version"] = project.version
     }
     mergeServiceFiles()
+}
+
+tasks.register("printVersion") {
+    val projectVersion = project.version.toString()
+    doLast {
+        println(projectVersion)
+    }
 }
 
 dependencies {
