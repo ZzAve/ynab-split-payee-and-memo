@@ -12,8 +12,8 @@ RUN "$JAVA_HOME"/bin/jlink \
          --strip-debug \
          --no-man-pages \
          --no-header-files \
-         --compress=2 \
-         --output /optimized-jdk-21
+         --compress zip-6 \
+         --output /optimized-jdk-25
 
 # Second stage, build the application
 FROM eclipse-temurin:25.0.2_10-jdk-alpine AS build
@@ -27,12 +27,12 @@ RUN ./gradlew shadowJar --no-daemon --no-configuration-cache
 
 # Third stage, Use the custom JRE and build the app image
 FROM alpine:3.22.0
-ENV JAVA_HOME=/opt/jdk/jdk-21
+ENV JAVA_HOME=/opt/jdk/jdk-25
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # copy JRE from the base image
-COPY --from=jre-builder /optimized-jdk-21 "$JAVA_HOME"
-#FROM eclipse-temurin:21-jre-alpine
+COPY --from=jre-builder /optimized-jdk-25 "$JAVA_HOME"
+#FROM eclipse-temurin:25-jre-alpine
 
 # Add app user
 ARG APPLICATION_USER=ynab

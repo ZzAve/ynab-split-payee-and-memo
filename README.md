@@ -45,7 +45,7 @@ If there's no dash in the import payee name, the entire name becomes the payee a
 ### Prerequisites
 
 - YNAB Personal Access Token (get it from your YNAB account settings)
-- Docker (for containerized deployment) or Java 21+ (for running the JAR directly)
+- Docker (for containerized deployment) or Java 25+ (for running the JAR directly)
 
 > ℹ️ The YNAB api has a ratelimit per access token to prevent misuse or poorly configured scripts
 >
@@ -216,7 +216,7 @@ After making changes, rebuild the application following the instructions in the 
 
 ### Prerequisites
 
-- JDK 21 or later
+- JDK 25 or later
 - Docker (for containerized builds)
 
 ### Building the JVM Application
