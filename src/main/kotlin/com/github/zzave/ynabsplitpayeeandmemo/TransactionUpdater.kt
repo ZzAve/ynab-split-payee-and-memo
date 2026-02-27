@@ -2,25 +2,31 @@ package com.github.zzave.ynabsplitpayeeandmemo
 
 import org.slf4j.LoggerFactory
 
-private val logger = LoggerFactory.getLogger("com.github.zzave.ynabsplitpayeeandmemo.TransactionUpdater")
+private val logger = LoggerFactory.getLogger(object {}::class.java.enclosingClass)
 
 fun List<Transaction>.findTransactionsToUpdate(): List<SaveTransactionWithId> {
     val transactionsToUpdateBatch = mutableListOf<SaveTransactionWithId>()
-    filter {
+    val eligible = filter {
         // Filter transactions that need processing
         !it.payeeName.isNullOrBlank() && !it.importPayeeName.isNullOrBlank()
-    }.forEach { transaction ->
+    }
+    val skippedNoPayee = size - eligible.size
+    if (skippedNoPayee > 0) {
+        logger.debug("Skipped {} transactions with blank payee/importPayee", skippedNoPayee)
+    }
+
+    eligible.forEach { transaction ->
         transaction
             .extractNewPayeeAndMemo()
             ?.let { newPayeeAndMemo ->
 
-                logger.info("  Transaction: ${transaction.id}")
-                logger.info("  Original payee: ${transaction.payeeName}")
-                logger.info("  Import payee: ${transaction.importPayeeName}")
-                logger.info("  New payee: ${newPayeeAndMemo.payee}")
-                logger.info("  Import memo: ${transaction.importMemo} ")
-                logger.info("  Current / old memo: ${transaction.memo}")
-                logger.info("  New memo: ${newPayeeAndMemo.memo}")
+                logger.info("Updating transaction {}: '{}' -> '{}'", transaction.id, transaction.payeeName, newPayeeAndMemo.payee)
+                logger.debug("  Original payee: {}", transaction.payeeName)
+                logger.debug("  Import payee: {}", transaction.importPayeeName)
+                logger.debug("  New payee: {}", newPayeeAndMemo.payee)
+                logger.debug("  Import memo: {}", transaction.importMemo)
+                logger.debug("  Current / old memo: {}", transaction.memo)
+                logger.debug("  New memo: {}", newPayeeAndMemo.memo)
 
                 transactionsToUpdateBatch.add(
                     SaveTransactionWithId(
@@ -39,6 +45,8 @@ fun List<Transaction>.findTransactionsToUpdate(): List<SaveTransactionWithId> {
                 )
             }
     }
+
+    logger.info("Analyzed {} transactions: {} need updating, {} skipped", size, transactionsToUpdateBatch.size, size - transactionsToUpdateBatch.size)
     return transactionsToUpdateBatch
 }
 
@@ -50,16 +58,16 @@ private data class NewPayeeAndMemo(
 private fun Transaction.extractNewPayeeAndMemo(): NewPayeeAndMemo? {
     // TODO: allow to reprocess if payeeName != importName if a 'reprocess' flag or similar is set.
     if (payeeName != importPayeeName) {
-        logger.info("Payee name does not match import payee name and was already changed by YNAB or user, skipping transaction: $id")
+        logger.debug("Payee name does not match import payee name and was already changed by YNAB or user, skipping transaction: {}", id)
         return null
     }
 
     if (payeeName != null && payeeName.startsWith("Transfer : ")) {
-        logger.info("Transaction is marked as a transfer, skipping transaction: $id")
+        logger.debug("Transaction is marked as a transfer, skipping transaction: {}", id)
         return null
     }
     if (importPayeeName == null) {
-        logger.info("Import payee name is null, skipping transaction: $id")
+        logger.debug("Import payee name is null, skipping transaction: {}", id)
         return null
     }
 
@@ -69,7 +77,7 @@ private fun Transaction.extractNewPayeeAndMemo(): NewPayeeAndMemo? {
             .split(" - ", limit = 2)
 
     val newPayee =
-        split.firstOrNull()?.trim() ?: return null.also { logger.info("No payee name found in transaction: $id") }
+        split.firstOrNull()?.trim() ?: return null.also { logger.warn("No payee name found in transaction: {}", id) }
     val memoFromPayee = split.getOrNull(1)
     val newMemo =
         when {
@@ -92,7 +100,7 @@ private fun Transaction.extractNewPayeeAndMemo(): NewPayeeAndMemo? {
         }
 
     if (payeeName == newPayee && memo == newMemo) {
-        return null.also { logger.info("Payee name and memo are unchanged, skipping transaction: $id") }
+        return null.also { logger.debug("Payee name and memo are unchanged, skipping transaction: {}", id) }
     }
 
     return NewPayeeAndMemo(payee = newPayee, memo = newMemo)

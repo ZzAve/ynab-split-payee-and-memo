@@ -62,6 +62,8 @@ class YnabClient(
             }
 
         if (response.status != HttpStatusCode.OK) {
+            val body = response.bodyAsText()
+            logger.error("Failed to fetch budgets: status={}, body={}", response.status, body)
             throw Exception("Failed to fetch budgets: ${response.status}")
         }
 
@@ -75,6 +77,7 @@ class YnabClient(
         // Use default budget if available, otherwise use the first budget
         val defaultBudget = ynabResponse.data.defaultBudget
         val budgetId = defaultBudget ?: budgets.first()
+        logger.debug("Resolved budget: {} ({})", budgetId.name, budgetId.id)
 
         return budgetId
     }
@@ -115,12 +118,17 @@ class YnabClient(
             }
 
         if (response.status != HttpStatusCode.OK) {
+            val body = response.bodyAsText()
+            logger.error("Failed to fetch transactions for budget {}: status={}, body={}", budgetId, response.status, body)
             throw Exception("Failed to fetch transactions: ${response.status}")
         }
 
         val ynabResponse: YnabResponse<TransactionsResponse> = response.body()
+        val allTransactions = ynabResponse.data.transactions
+        val activeTransactions = allTransactions.filter { !it.deleted }
+        logger.debug("Fetched {} transactions ({} deleted, {} active)", allTransactions.size, allTransactions.size - activeTransactions.size, activeTransactions.size)
 
-        return ynabResponse.data.transactions.filter { !it.deleted }
+        return activeTransactions
     }
 
     /**
@@ -143,14 +151,17 @@ class YnabClient(
                 header("Authorization", "Bearer $token")
                 contentType(ContentType.Application.Json)
                 setBody(wrapper)
-                println(this.body)
+                logger.debug("Request body: {}", this.body)
             }
 
         if (response.status != HttpStatusCode.OK && response.status != HttpStatusCode.fromValue(209)) {
-            throw Exception("Failed to update transactions: ${response.status}, ${response.bodyAsText()}")
+            val body = response.bodyAsText()
+            logger.error("Failed to update {} transactions for budget {}: status={}, body={}", transactions.size, budgetId, response.status, body)
+            throw Exception("Failed to update transactions: ${response.status}, $body")
         }
 
         val ynabResponse: YnabResponse<SaveTransactionsResponse> = response.body()
+        logger.debug("Successfully updated {} transactions", ynabResponse.data.transactions.size)
 
         return ynabResponse.data.transactions
     }
