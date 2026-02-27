@@ -30,7 +30,7 @@ RUN MODULES=$("$JAVA_HOME"/bin/jdeps \
 
 
 # Third stage, use the custom JRE and build the app image
-FROM alpine:3.22.0
+FROM alpine:3.23.3
 ENV JAVA_HOME=/opt/jre
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
