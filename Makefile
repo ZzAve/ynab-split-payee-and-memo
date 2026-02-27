@@ -9,7 +9,11 @@ build:
 	./gradlew build
 
 test:
+ifdef TEST
+	./gradlew test --tests "$(TEST)"
+else
 	./gradlew test
+endif
 
 yolo:
 	./gradlew build -x test
