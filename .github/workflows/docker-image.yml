@@ -19,8 +19,10 @@ jobs:
         include:
           - platform: linux/amd64
             runner: ubuntu-latest
+            arch: amd64
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
+            arch: arm64
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Docker meta
@@ -59,8 +61,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_VERSION=${{ steps.app-version.outputs.version }}
-          cache-from: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo
-          cache-to: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo,mode=max
+          cache-from: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo-${{ matrix.arch }}
+          cache-to: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo-${{ matrix.arch }},mode=max
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
