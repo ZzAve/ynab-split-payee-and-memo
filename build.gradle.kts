@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "nl.zzave.ynab-split-payee"
-version = "1.0-SNAPSHOT"
+version = "${if (version != "unspecified") version else "0-SNAPSHOT"}"
 
 repositories {
     mavenCentral()
