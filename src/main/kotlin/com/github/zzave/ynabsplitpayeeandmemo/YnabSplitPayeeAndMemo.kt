@@ -92,6 +92,7 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             logger.info("=====================================")
             logger.info("=====================================")
             logger.info("Starting YNAB Split Payee and Memo")
+            logger.info("Version: ${BuildInfo.VERSION}")
             logger.info("=====================================")
             logger.info("=====================================")
             logger.info("Token: ${token.take(5)}...")

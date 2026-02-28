@@ -2,7 +2,7 @@
 
 
 docker_image_name = zzave/ynab-split-payee
-docker_image_version = 0-SNAPSHOT
+docker_image_version := $(shell ./gradlew -q printVersion)
 CURRENT_DIR := $(shell pwd)
 
 build:
@@ -22,7 +22,7 @@ clean:
 	./gradlew clean
 
 docker:
-	docker build -t ${docker_image_name}:${docker_image_version} .
+	docker build --build-arg APP_VERSION=${docker_image_version} -t ${docker_image_name}:${docker_image_version} .
 
 run: docker
 	docker run \

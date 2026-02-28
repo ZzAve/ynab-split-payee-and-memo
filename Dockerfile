@@ -5,7 +5,8 @@ WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle gradle/ /home/gradle/src/gradle/
 RUN ./gradlew
 COPY --chown=gradle:gradle . /home/gradle/src
-RUN ./gradlew shadowJar --no-daemon --no-configuration-cache
+ARG APP_VERSION
+RUN ./gradlew shadowJar --no-daemon --no-configuration-cache ${APP_VERSION:+-Pversion=$APP_VERSION}
 
 
 # Second stage, build the custom JRE
