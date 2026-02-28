@@ -43,7 +43,7 @@ jobs:
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
             echo "version=${{ steps.meta.outputs.version }}" >> "$GITHUB_OUTPUT"
           else
-            echo "version=1.0-SNAPSHOT+${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "version=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build and push
