@@ -1,11 +1,11 @@
 # First stage, build the application
 FROM eclipse-temurin:25.0.2_10-jdk-alpine AS build
-ARG APP_VERSION
 COPY --chown=gradle:gradle ./gradlew /home/gradle/src/
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle gradle/ /home/gradle/src/gradle/
 RUN ./gradlew
 COPY --chown=gradle:gradle . /home/gradle/src
+ARG APP_VERSION
 RUN ./gradlew shadowJar --no-daemon --no-configuration-cache ${APP_VERSION:+-Pversion=$APP_VERSION}
 
 
