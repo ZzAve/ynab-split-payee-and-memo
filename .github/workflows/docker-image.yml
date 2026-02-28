@@ -5,6 +5,7 @@ on:
     branches:
         - "main"
         - "push-to-docker"
+        - "feature/version-propagation"
     tags:
       - "v*.*.*"
 
@@ -36,6 +37,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Determine app version
+        id: app-version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "version=${{ steps.meta.outputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=1.0-SNAPSHOT+${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -44,6 +54,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            APP_VERSION=${{ steps.meta.outputs.version }}
+            APP_VERSION=${{ steps.app-version.outputs.version }}
           cache-from: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo
           cache-to: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo,mode=max
