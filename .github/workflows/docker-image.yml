@@ -44,5 +44,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=zzave/ynab-split-payee:buildcache
-          cache-to: type=registry,ref=zzave/ynab-split-payee:buildcache,mode=max
+          cache-from: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo
+          cache-to: type=registry,ref=zzave/github-actions-buildcache:ynab-split-payee-and-memo,mode=max
