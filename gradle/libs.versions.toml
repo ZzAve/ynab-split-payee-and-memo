@@ -8,7 +8,7 @@ kotlinxSerialization = "1.10.0"
 ktor = "3.4.0"
 logback = "1.5.27"
 kotest = "6.0.7"
-shadow = "9.3.1"
+shadow = "9.3.2"
 
 [libraries]
 kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
