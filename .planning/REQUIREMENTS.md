@@ -18,8 +18,8 @@
 
 ### Happy Path
 
-- [ ] **E2E-01**: CLI splits transactions with " - " separator into payee and memo
-- [ ] **E2E-02**: CLI sends batch updates to the API correctly
+- [x] **E2E-01**: CLI splits transactions with " - " separator into payee and memo
+- [x] **E2E-02**: CLI sends batch updates to the API correctly
 
 ### Auth & Errors
 
@@ -67,8 +67,8 @@
 | TEST-01 | Phase 2 | Complete |
 | TEST-02 | Phase 2 | Complete |
 | TEST-03 | Phase 2 | Complete |
-| E2E-01 | Phase 3 | Pending |
-| E2E-02 | Phase 3 | Pending |
+| E2E-01 | Phase 3 | Complete |
+| E2E-02 | Phase 3 | Complete |
 | E2E-03 | Phase 3 | Complete |
 | E2E-04 | Phase 4 | Pending |
 | E2E-05 | Phase 4 | Pending |

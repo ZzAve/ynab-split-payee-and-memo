@@ -85,6 +85,9 @@ Overall    [██████████████████            ] 
 | Correct JVM toolchain to 21 | Match CLAUDE.md spec, system compatibility | ✓ Fixed (Phase 2.2) |
 | Clear YNAB env vars in CliRunner | Prevents host environment from interfering with test arguments | ✓ Implemented (Phase 3.2) |
 | Use wireMockServer.stubFor() | Instance method ensures stubs register on correct server | ✓ Implemented (Phase 3.2) |
+| Remove --dry-run from E2E tests | Dry-run prevents PATCH requests needed for batch verification | ✓ Implemented (Phase 3.1) |
+| Add default values to SaveTransactionWithId | Makes nullable fields optional in serialization | ✓ Fixed (Phase 3.1) |
+| Use 26 transactions for batch test | Validates batch splitting (25+1) with minimal test data | ✓ Implemented (Phase 3.1) |
 
 ---
 
@@ -236,6 +239,7 @@ Overall    [██████████████████            ] 
 | 02-01 | 385s (~6min) | 2 | 5 | ✓ Complete |
 | 02-02 | 785s (~13min) | 2 | 7 | ✓ Complete |
 | 03-02 | 584s (~10min) | 1 | 2 | ✓ Complete |
+| 03-01 | 687s (~11min) | 2 | 4 | ✓ Complete |
 
 ## Session Continuity
 
