@@ -51,10 +51,10 @@ Plans:
   3. Test helper captures and exposes CLI exit code, stdout, and stderr for assertions
   4. Mock server simulates YNAB API v1 endpoints (budgets, transactions, batch updates)
 
-**Plans:** 2 plans
+**Plans:** 1/2 complete
 
 Plans:
-- [ ] 02-01-PLAN.md — Add WireMock dependency and create base test class with automatic server lifecycle
+- [x] 02-01-PLAN.md — Add WireMock dependency and create base test class with automatic server lifecycle ✓ Complete (02-01-SUMMARY.md)
 - [ ] 02-02-PLAN.md — Create ProcessBuilder CLI invocation helper and smoke test scaffold
 
 ---
@@ -99,7 +99,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. CLI Configuration | 1/1 | Complete | ✓ |
-| 2. Test Infrastructure Setup | 0/2 | Planned | — |
+| 2. Test Infrastructure Setup | 1/2 | In Progress | — |
 | 3. Core E2E Tests | 0/2 | Not started | — |
 | 4. Edge Case Coverage | 0/2 | Not started | — |
 
