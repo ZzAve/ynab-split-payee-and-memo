@@ -32,8 +32,6 @@
             --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
         }
 
-        html { scroll-behavior: smooth; }
-
         body {
             font-family: var(--font-stack);
             background-color: var(--bg-dark);
@@ -237,7 +235,6 @@
             padding: 0.6rem 1rem;
             align-items: center;
             border-bottom: 1px solid var(--ynab-border);
-            transition: background 0.15s ease;
         }
 
         .ynab-check {
@@ -281,7 +278,6 @@
 
         .ynab-row .memo.empty {
             color: #c8bfaa;
-            font-style: italic;
         }
 
         /* ===== GET STARTED SECTION ===== */
@@ -473,12 +469,19 @@
                 padding-right: 0.6rem;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-delay: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
 
     <!-- ===== HERO ===== -->
-    <section class="hero section">
+    <header class="hero section">
         <div class="hero-content">
             <h1>
                 Your bank stuffs everything into one field.<br>
@@ -489,11 +492,11 @@
                 &mdash; separating messy payee descriptions into proper Payee and Memo fields.
             </p>
             <a href="https://github.com/ZzAve/ynab-split-payee-and-memo" class="cta-btn" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
                 View on GitHub
             </a>
         </div>
-    </section>
+    </header>
 
     <!-- ===== BEFORE / AFTER ===== -->
     <section class="comparison section">
@@ -506,43 +509,43 @@
             <!-- BEFORE PANEL -->
             <div class="panel-wrapper">
                 <div class="panel-label before">Before &#x1F629;</div>
-                <div class="ynab-panel">
-                    <div class="ynab-header">
-                        <span class="ynab-check">&#x2713;</span>
-                        <span>Date</span>
-                        <span>Payee</span>
-                        <span>Memo</span>
+                <div class="ynab-panel" role="table" aria-label="YNAB transactions before cleanup">
+                    <div class="ynab-header" role="row">
+                        <span class="ynab-check" role="columnheader" aria-label="Status">&#x2713;</span>
+                        <span role="columnheader">Date</span>
+                        <span role="columnheader">Payee</span>
+                        <span role="columnheader">Memo</span>
                     </div>
-                    <div class="ynab-rows">
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/28</span>
-                            <span class="payee">ALBERT HEIJN 1576 - AMSTERDAM</span>
-                            <span class="memo empty">&mdash;</span>
+                    <div class="ynab-rows" role="rowgroup">
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/28</span>
+                            <span class="payee" role="cell">ALBERT HEIJN 1576 - AMSTERDAM</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/27</span>
-                            <span class="payee">AMAZON.COM - KOTLIN IN ACTION</span>
-                            <span class="memo empty">&mdash;</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/27</span>
+                            <span class="payee" role="cell">AMAZON.COM - KOTLIN IN ACTION</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/26</span>
-                            <span class="payee">COOLBLUE - WIRELESS MOUSE</span>
-                            <span class="memo empty">&mdash;</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/26</span>
+                            <span class="payee" role="cell">COOLBLUE - WIRELESS MOUSE</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/25</span>
-                            <span class="payee">SHELL - FUEL STATION A2</span>
-                            <span class="memo empty">&mdash;</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/25</span>
+                            <span class="payee" role="cell">SHELL - FUEL STATION A2</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/24</span>
-                            <span class="payee">THUISBEZORGD.NL - ORDER 847291</span>
-                            <span class="memo empty">&mdash;</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/24</span>
+                            <span class="payee" role="cell">THUISBEZORGD.NL - ORDER 847291</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
                         </div>
                     </div>
                 </div>
@@ -551,43 +554,43 @@
             <!-- AFTER PANEL -->
             <div class="panel-wrapper">
                 <div class="panel-label after">After &#x1F389;</div>
-                <div class="ynab-panel">
-                    <div class="ynab-header">
-                        <span class="ynab-check">&#x2713;</span>
-                        <span>Date</span>
-                        <span>Payee</span>
-                        <span>Memo</span>
+                <div class="ynab-panel" role="table" aria-label="YNAB transactions after cleanup">
+                    <div class="ynab-header" role="row">
+                        <span class="ynab-check" role="columnheader" aria-label="Status">&#x2713;</span>
+                        <span role="columnheader">Date</span>
+                        <span role="columnheader">Payee</span>
+                        <span role="columnheader">Memo</span>
                     </div>
-                    <div class="ynab-rows">
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/28</span>
-                            <span class="payee">ALBERT HEIJN 1576</span>
-                            <span class="memo">AMSTERDAM</span>
+                    <div class="ynab-rows" role="rowgroup">
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/28</span>
+                            <span class="payee" role="cell">ALBERT HEIJN 1576</span>
+                            <span class="memo" role="cell">AMSTERDAM</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/27</span>
-                            <span class="payee">AMAZON.COM</span>
-                            <span class="memo">KOTLIN IN ACTION</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/27</span>
+                            <span class="payee" role="cell">AMAZON.COM</span>
+                            <span class="memo" role="cell">KOTLIN IN ACTION</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/26</span>
-                            <span class="payee">COOLBLUE</span>
-                            <span class="memo">WIRELESS MOUSE</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/26</span>
+                            <span class="payee" role="cell">COOLBLUE</span>
+                            <span class="memo" role="cell">WIRELESS MOUSE</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/25</span>
-                            <span class="payee">SHELL</span>
-                            <span class="memo">FUEL STATION A2</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/25</span>
+                            <span class="payee" role="cell">SHELL</span>
+                            <span class="memo" role="cell">FUEL STATION A2</span>
                         </div>
-                        <div class="ynab-row">
-                            <span class="ynab-check">&#x2713;</span>
-                            <span class="date">02/24</span>
-                            <span class="payee">THUISBEZORGD.NL</span>
-                            <span class="memo">ORDER 847291</span>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/24</span>
+                            <span class="payee" role="cell">THUISBEZORGD.NL</span>
+                            <span class="memo" role="cell">ORDER 847291</span>
                         </div>
                     </div>
                 </div>
@@ -638,7 +641,7 @@
     <footer class="section">
         <div class="footer-links">
             <a href="https://github.com/ZzAve/ynab-split-payee-and-memo" target="_blank" rel="noopener">GitHub</a>
-            <span class="sep"></span>
+            <span class="sep" aria-hidden="true"></span>
             <a href="https://github.com/ZzAve/ynab-split-payee-and-memo/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
         </div>
         <p class="footer-tagline">Made with &#9749; and frustration at messy payees</p>
