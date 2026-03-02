@@ -56,3 +56,18 @@ Four main classes in `src/main/kotlin/com/github/zzave/ynabsplitpayeeandmemo/`:
 CLI options can also be set via environment variables: `YNAB_TOKEN`, `YNAB_BUDGET_ID`, `YNAB_BUDGET_IDS`, `YNAB_ACCOUNT_ID`. A `.env` file is used by `make run` / `make dry-run`.
 
 Logging is controlled by `YNAB_LOG` env var (`FILE` for file output, otherwise console). Config in `src/main/resources/logback.xml`.
+
+## Documentation Site
+
+The project has a GitHub Pages site in `docs/`:
+
+- **`docs/index.html`** — Landing page (hero, before/after demo, trust section, get started)
+- **`docs/usage.html`** — Tutorial-style usage guide (CLI options, Docker examples, automation)
+- **`docs/logo.svg`** — Project logo
+
+**After any feature or change, check if the site documentation needs updating.** Specifically:
+
+- CLI option added/changed/removed → update the CLI reference in `docs/usage.html` and any relevant examples
+- Business logic changed (splitting rules, filtering, memo handling) → update `docs/index.html` before/after examples and trust section claims
+- Docker image name or usage changed → update Docker commands in both pages
+- New configuration options → add to the usage guide

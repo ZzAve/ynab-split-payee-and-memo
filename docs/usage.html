@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Guide - YNAB Split Payee and Memo</title>
+    <meta name="description" content="Step-by-step tutorial for using YNAB Split Payee and Memo to clean up your imported transactions.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M7 10C7 7.2 9.2 5 12 5L26 5 22 59 12 59C9.2 59 7 56.8 7 54Z' fill='%23545bfe' opacity='0.82'/%3E%3Cpath d='M38 5L52 5C54.8 5 57 7.2 57 10V54C57 56.8 54.8 59 52 59L42 59Z' fill='%23545bfe'/%3E%3Crect x='26.5' y='28.5' width='11' height='3.5' rx='1.75' fill='%232ec271'/%3E%3Crect x='11.5' y='16' width='12' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='11.5' y='22' width='8.5' height='2' rx='1' fill='%23fff' opacity='0.3'/%3E%3Crect x='12' y='36' width='10' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='12' y='42' width='7' height='2' rx='1' fill='%23fff' opacity='0.3'/%3E%3Crect x='42' y='16' width='11' height='2' rx='1' fill='%23fff' opacity='0.75'/%3E%3Crect x='42' y='22' width='8' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='42' y='36' width='10' height='2' rx='1' fill='%23fff' opacity='0.75'/%3E%3Crect x='42' y='42' width='6' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3C/svg%3E">
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-dark: #181b2e;
+            --bg-dark-lighter: #1e2140;
+            --accent-purple: #545bfe;
+            --accent-purple-glow: rgba(84, 91, 254, 0.25);
+            --accent-green: #2ec271;
+            --accent-green-glow: rgba(46, 194, 113, 0.15);
+            --accent-red: #e84855;
+            --text-primary: #eef0f8;
+            --text-secondary: #a0a5c0;
+            --text-muted: #6b7194;
+            --ynab-cream: #fef9ed;
+            --ynab-cream-alt: #fdf5e2;
+            --ynab-navy: #1c1f58;
+            --ynab-navy-light: #292d6b;
+            --ynab-border: #e8dcc8;
+            --ynab-text: #3a3352;
+            --ynab-text-light: #8e87a0;
+            --code-bg: #12142a;
+            --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== NOISE OVERLAY FOR TEXTURE ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== TOP NAV ===== */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(24, 27, 46, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(84, 91, 254, 0.12);
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .top-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .top-nav a:hover { color: var(--accent-purple); }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nav-back svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            transition: transform 0.2s;
+        }
+
+        .nav-back:hover svg { transform: translateX(-3px); }
+
+        .nav-github {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nav-github svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 5rem 2rem 3.5rem;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: 50%; transform: translateX(-50%);
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, var(--accent-purple-glow) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .page-header-content {
+            position: relative;
+            z-index: 2;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .page-header h1 {
+            font-size: clamp(2rem, 4.5vw, 3rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+
+        .page-header h1 .accent {
+            color: var(--accent-purple);
+        }
+
+        .page-header .lead {
+            font-size: clamp(1rem, 2vw, 1.15rem);
+            color: var(--text-secondary);
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* ===== TABLE OF CONTENTS ===== */
+        .toc {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+            margin: 0 auto 2rem;
+            padding: 0 2rem;
+        }
+
+        .toc-inner {
+            background: var(--bg-dark-lighter);
+            border: 1px solid rgba(84, 91, 254, 0.15);
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+        }
+
+        .toc-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .toc-list li {
+            display: flex;
+            align-items: baseline;
+            gap: 0.65rem;
+        }
+
+        .toc-number {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            min-width: 1.5rem;
+        }
+
+        .toc-list a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            line-height: 1.6;
+        }
+
+        .toc-list a:hover { color: var(--accent-purple); }
+
+        /* ===== TUTORIAL SECTIONS ===== */
+        .tutorial-section {
+            position: relative;
+            z-index: 1;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 3rem 2rem 3.5rem;
+        }
+
+        .tutorial-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 2rem; right: 2rem;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(84, 91, 254, 0.2), transparent);
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-number {
+            width: 36px; height: 36px;
+            background: var(--accent-purple);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 12px var(--accent-purple-glow);
+            flex-shrink: 0;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-purple);
+        }
+
+        .tutorial-section h2 {
+            font-size: clamp(1.5rem, 3.5vw, 2rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .tutorial-section p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.75;
+            margin-bottom: 1rem;
+        }
+
+        .tutorial-section p:last-child { margin-bottom: 0; }
+
+        .tutorial-section strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .tutorial-section a {
+            color: var(--accent-purple);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(84, 91, 254, 0.3);
+            transition: border-color 0.2s;
+        }
+
+        .tutorial-section a:hover { border-color: var(--accent-purple); }
+
+        /* ===== CHECKLIST ===== */
+        .checklist {
+            list-style: none;
+            margin: 1rem 0 1.2rem;
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .checklist li::before {
+            content: '';
+            flex-shrink: 0;
+            width: 20px; height: 20px;
+            margin-top: 2px;
+            border-radius: 6px;
+            border: 2px solid var(--accent-green);
+            background: rgba(46, 194, 113, 0.08);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 8.5L6.5 11L12 5' stroke='%232ec271' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 14px;
+        }
+
+        /* ===== CODE BLOCKS ===== */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid rgba(84, 91, 254, 0.15);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            margin: 1rem 0 1.2rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: #c5cae8;
+            white-space: pre;
+            line-height: 1.6;
+        }
+
+        .code-block code .token-flag { color: var(--accent-green); }
+        .code-block code .token-url { color: #88a4e6; }
+        .code-block code .token-arg { color: #ffa657; }
+        .code-block code .token-comment { color: var(--text-muted); font-style: italic; }
+        .code-block code .token-env { color: #d4a0ff; }
+        .code-block code .token-cmd { color: #7dd3fc; }
+
+        .code-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* ===== CALLOUT BOXES ===== */
+        .callout {
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            margin: 1rem 0 1.2rem;
+            font-size: 0.92rem;
+            line-height: 1.65;
+        }
+
+        .callout p { font-size: 0.92rem; margin-bottom: 0; }
+
+        .callout-tip {
+            background: rgba(46, 194, 113, 0.08);
+            border: 1px solid rgba(46, 194, 113, 0.2);
+            color: var(--text-secondary);
+        }
+
+        .callout-tip .callout-label {
+            color: var(--accent-green);
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.3rem;
+        }
+
+        .callout-info {
+            background: rgba(84, 91, 254, 0.06);
+            border: 1px solid rgba(84, 91, 254, 0.18);
+            color: var(--text-secondary);
+        }
+
+        .callout-info .callout-label {
+            color: var(--accent-purple);
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.3rem;
+        }
+
+        .callout-warn {
+            background: rgba(255, 166, 87, 0.06);
+            border: 1px solid rgba(255, 166, 87, 0.2);
+            color: var(--text-secondary);
+        }
+
+        .callout-warn .callout-label {
+            color: #ffa657;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ===== CLI REFERENCE TABLE ===== */
+        .cli-ref {
+            margin: 1rem 0 1.2rem;
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .cli-ref-item {
+            background: var(--bg-dark-lighter);
+            border: 1px solid rgba(84, 91, 254, 0.1);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            transition: border-color 0.2s;
+        }
+
+        .cli-ref-item:hover {
+            border-color: rgba(84, 91, 254, 0.25);
+        }
+
+        .cli-ref-flags {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .cli-ref-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        .cli-ref-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .cli-ref-meta code {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            background: var(--code-bg);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #d4a0ff;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .tag-required {
+            background: rgba(232, 72, 85, 0.12);
+            color: var(--accent-red);
+        }
+
+        .tag-default {
+            background: rgba(84, 91, 254, 0.1);
+            color: var(--accent-purple);
+        }
+
+        /* Inline code */
+        .tutorial-section :not(pre) > code,
+        .callout code,
+        .checklist code {
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 5px;
+            color: #c5cae8;
+            border: 1px solid rgba(84, 91, 254, 0.1);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2.5rem 2rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--accent-purple); }
+
+        .footer-links .sep {
+            width: 4px; height: 4px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .footer-tagline {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header-content { animation: fadeInUp 0.7s ease-out both; }
+        .toc-inner { animation: fadeInUp 0.6s ease-out 0.15s both; }
+
+        .tutorial-section:nth-of-type(1) { animation: fadeInUp 0.5s ease-out 0.05s both; }
+        .tutorial-section:nth-of-type(2) { animation: fadeInUp 0.5s ease-out 0.1s both; }
+        .tutorial-section:nth-of-type(3) { animation: fadeInUp 0.5s ease-out 0.15s both; }
+        .tutorial-section:nth-of-type(4) { animation: fadeInUp 0.5s ease-out 0.2s both; }
+        .tutorial-section:nth-of-type(5) { animation: fadeInUp 0.5s ease-out 0.25s both; }
+        .tutorial-section:nth-of-type(6) { animation: fadeInUp 0.5s ease-out 0.3s both; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .page-header { padding: 4rem 1.5rem 2.5rem; }
+            .tutorial-section { padding: 2.5rem 1.5rem 3rem; }
+            .toc { padding: 0 1.5rem; }
+            .top-nav { padding: 0.75rem 1.25rem; }
+        }
+
+        @media (max-width: 480px) {
+            .page-header h1 { font-size: 1.7rem; }
+            .tutorial-section h2 { font-size: 1.3rem; }
+            .code-block { padding: 0.8rem; }
+            .code-block code { font-size: 0.75rem; }
+            .cli-ref-item { padding: 0.8rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-delay: 0.01ms !important;
+            }
+            .nav-back:hover svg { transform: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TOP NAV ===== -->
+    <nav class="top-nav" aria-label="Page navigation">
+        <a href="index.html" class="nav-back">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M10.5 3L5.5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            Back to Home
+        </a>
+        <a href="https://github.com/ZzAve/ynab-split-payee-and-memo" class="nav-github" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+        </a>
+    </nav>
+
+    <!-- ===== PAGE HEADER ===== -->
+    <header class="page-header">
+        <div class="page-header-content">
+            <h1>Getting started with <span class="accent">YNAB Split Payee and Memo</span></h1>
+            <p class="lead">
+                A friendly walkthrough from zero to clean payees.
+                Follow along step by step &mdash; you'll be done in five minutes.
+            </p>
+        </div>
+    </header>
+
+    <!-- ===== TABLE OF CONTENTS ===== -->
+    <nav class="toc" aria-label="Table of contents">
+        <div class="toc-inner">
+            <div class="toc-title">In this guide</div>
+            <ol class="toc-list">
+                <li><span class="toc-number">01</span><a href="#prerequisites">Prerequisites</a></li>
+                <li><span class="toc-number">02</span><a href="#first-run">Your first run</a></li>
+                <li><span class="toc-number">03</span><a href="#targeting">Targeting specific budgets and accounts</a></li>
+                <li><span class="toc-number">04</span><a href="#approved">Approved vs unapproved transactions</a></li>
+                <li><span class="toc-number">05</span><a href="#automate">Automate it</a></li>
+                <li><span class="toc-number">06</span><a href="#cli-reference">CLI reference</a></li>
+            </ol>
+        </div>
+    </nav>
+
+    <!-- ===== SECTION 1: PREREQUISITES ===== -->
+    <section class="tutorial-section" id="prerequisites" aria-labelledby="prerequisites-heading">
+        <div class="section-badge">
+            <div class="section-number" aria-hidden="true">1</div>
+            <span class="section-label">Getting ready</span>
+        </div>
+        <h2 id="prerequisites-heading">Prerequisites</h2>
+        <p>
+            Before you start, make sure you have a few things in place.
+            Nothing exotic &mdash; just the basics.
+        </p>
+
+        <ul class="checklist" role="list">
+            <li>A <strong>YNAB account</strong> with at least one linked bank account (direct import). That's where the messy payee descriptions come from.</li>
+            <li>A <strong>YNAB Personal Access Token</strong>. This is how the tool talks to your budget.</li>
+            <li><strong>Docker</strong> installed and running on your machine. (If you prefer, Java 21+ works too &mdash; but Docker is the easy path.)</li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin: 1.5rem 0 0.6rem; color: var(--text-primary);">Getting your YNAB token</h3>
+        <p>
+            Head over to <a href="https://app.ynab.com/settings/developer" target="_blank" rel="noopener">YNAB Developer Settings</a>
+            and click <strong>"New Personal Access Token"</strong>. Give it a name you'll recognize
+            (something like "payee splitter"), copy the token, and keep it somewhere safe.
+            You'll need it every time you run the tool.
+        </p>
+
+        <div class="callout callout-warn" role="note">
+            <div class="callout-label">Heads up</div>
+            <p>
+                YNAB only shows your token <strong>once</strong> when you create it.
+                If you lose it, you'll need to create a new one.
+            </p>
+        </div>
+
+        <div class="callout callout-info" role="note">
+            <div class="callout-label">Rate limits</div>
+            <p>
+                The YNAB API has a rate limit per access token to prevent misuse.
+                Normal usage of this tool is well within limits, but keep it in mind if you're running it very frequently.
+                See the <a href="https://api.ynab.com/#rate-limiting" target="_blank" rel="noopener">YNAB API docs</a> for details.
+            </p>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 2: YOUR FIRST RUN ===== -->
+    <section class="tutorial-section" id="first-run" aria-labelledby="first-run-heading">
+        <div class="section-badge">
+            <div class="section-number" aria-hidden="true">2</div>
+            <span class="section-label">Hello, world</span>
+        </div>
+        <h2 id="first-run-heading">Your first run</h2>
+        <p>
+            Let's get those payees cleaned up. We'll start with a dry run so you can see what
+            the tool <em>would</em> do, without actually changing anything.
+        </p>
+
+        <div class="callout callout-tip" role="note">
+            <div class="callout-label">Recommended</div>
+            <p>
+                Always use <code>--dry-run</code> the first time. It lets you preview the changes
+                before committing them to your budget. Add <code>--verbose</code> for detailed
+                output showing exactly which transactions will be split and how &mdash; really helpful
+                to understand what the tool is doing. No surprises.
+            </p>
+        </div>
+
+        <p class="code-label">Try a dry run first</p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span> \
+  <span class="token-flag">--dry-run</span> <span class="token-flag">--verbose</span></code></div>
+
+        <p>
+            Here's what happens when you run that command:
+        </p>
+        <ol style="margin: 0.5rem 0 1.2rem 1.2rem; color: var(--text-secondary); display: grid; gap: 0.4rem;">
+            <li>The tool connects to the YNAB API using your token.</li>
+            <li>It finds your <strong>last-used budget</strong> automatically (no need to specify one).</li>
+            <li>It pulls your recent <strong>unapproved transactions</strong> from the last 30 days.</li>
+            <li>For each transaction where the payee contains " - ", it splits it into a clean Payee and Memo.</li>
+            <li>With <code>--dry-run</code>, it logs what it <em>would</em> change &mdash; but doesn't touch anything.</li>
+        </ol>
+
+        <p>
+            Happy with what you see? Run it for real by dropping the <code>--dry-run</code> flag:
+        </p>
+
+        <p class="code-label">Run it for real</p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span></code></div>
+
+        <p>
+            That's it. Your transactions are now clean. Payees are payees, memos are memos.
+            The way it should have been from the start.
+        </p>
+    </section>
+
+    <!-- ===== SECTION 3: TARGETING ===== -->
+    <section class="tutorial-section" id="targeting" aria-labelledby="targeting-heading">
+        <div class="section-badge">
+            <div class="section-number" aria-hidden="true">3</div>
+            <span class="section-label">Fine-tuning</span>
+        </div>
+        <h2 id="targeting-heading">Targeting specific budgets and accounts</h2>
+        <p>
+            By default, the tool uses your last-used budget and processes <strong>all accounts</strong>.
+            That's great for most people. But if you have multiple budgets or only want to clean up
+            a specific account, you can be more precise.
+        </p>
+
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 0.6rem; color: var(--text-primary);">Specifying a budget</h3>
+        <p>
+            Pass <code>--budget-id</code> to target a specific budget. You can find your budget ID
+            in the YNAB web app URL &mdash; it's the long string after <code>/budget/</code>.
+        </p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span> \
+  <span class="token-flag">--budget-id</span> <span class="token-arg">abc123-your-budget-id</span></code></div>
+
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 0.6rem; color: var(--text-primary);">Specifying an account</h3>
+        <p>
+            Similarly, use <code>--account-id</code> to only process a specific account within your budget:
+        </p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span> \
+  <span class="token-flag">--budget-id</span> <span class="token-arg">BUDGET_ID</span> \
+  <span class="token-flag">--account-id</span> <span class="token-arg">ACCOUNT_ID</span></code></div>
+
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 0.6rem; color: var(--text-primary);">Controlling the lookback window</h3>
+        <p>
+            The tool looks back <strong>30 days</strong> by default. Want to process older transactions?
+            Use <code>--days-back</code>:
+        </p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span> \
+  <span class="token-flag">--days-back</span> <span class="token-arg">90</span></code></div>
+
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 0.6rem; color: var(--text-primary);">Using environment variables</h3>
+        <p>
+            Tired of typing long flags? Use environment variables instead.
+            This is especially handy for automated setups (more on that in <a href="#automate">Section 5</a>).
+        </p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-flag">-e</span> <span class="token-env">YNAB_TOKEN</span>=<span class="token-arg">YOUR_TOKEN</span> \
+  <span class="token-flag">-e</span> <span class="token-env">YNAB_BUDGET_ID</span>=<span class="token-arg">BUDGET_ID</span> \
+  <span class="token-flag">-e</span> <span class="token-env">YNAB_ACCOUNT_ID</span>=<span class="token-arg">ACCOUNT_ID</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span></code></div>
+    </section>
+
+    <!-- ===== SECTION 4: APPROVED VS UNAPPROVED ===== -->
+    <section class="tutorial-section" id="approved" aria-labelledby="approved-heading">
+        <div class="section-badge">
+            <div class="section-number" aria-hidden="true">4</div>
+            <span class="section-label">Good to know</span>
+        </div>
+        <h2 id="approved-heading">Approved vs unapproved transactions</h2>
+        <p>
+            By default, the tool only processes <strong>unapproved transactions</strong>.
+            These are the ones that just came in from your bank and haven't been reviewed yet.
+        </p>
+        <p>
+            This is intentional: if you've already approved a transaction, you've probably
+            looked at it and are happy with how it looks. The tool respects that and leaves it alone.
+        </p>
+
+        <div class="callout callout-info" role="note">
+            <div class="callout-label">How it works</div>
+            <p>
+                The tool also skips any transaction where you've <strong>manually changed the payee name</strong>
+                (it checks whether <code>payee_name</code> still matches <code>import_payee_name</code>).
+                Transfers (payees starting with "Transfer : ") are always skipped too.
+            </p>
+        </div>
+
+        <p>
+            Want to go back and clean up older, already-approved transactions? Use the <code>--all</code> flag:
+        </p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span> \
+  <span class="token-flag">--all</span></code></div>
+
+        <p>
+            This processes <em>every</em> eligible transaction in the lookback window, regardless of approval status.
+            Pair it with <code>--dry-run</code> and a larger <code>--days-back</code>
+            to preview the full blast radius before committing:
+        </p>
+        <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span> \
+  <span class="token-flag">--all</span> <span class="token-flag">--days-back</span> <span class="token-arg">365</span> <span class="token-flag">--dry-run</span></code></div>
+    </section>
+
+    <!-- ===== SECTION 5: AUTOMATE IT ===== -->
+    <section class="tutorial-section" id="automate" aria-labelledby="automate-heading">
+        <div class="section-badge">
+            <div class="section-number" aria-hidden="true">5</div>
+            <span class="section-label">Set it and forget it</span>
+        </div>
+        <h2 id="automate-heading">Automate it</h2>
+        <p>
+            The real magic is running this automatically. Set up a cron job and never think about
+            messy payees again. Every morning, your transactions are clean before you even open YNAB.
+        </p>
+
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 1.5rem 0 0.6rem; color: var(--text-primary);">Quick cron setup</h3>
+        <p>
+            Create a small shell script that runs the Docker container with your token.
+            Use environment variables to keep things tidy:
+        </p>
+
+        <p class="code-label">~/scripts/run-ynab-splitter.sh</p>
+        <div class="code-block"><code><span class="token-comment">#!/bin/bash</span>
+<span class="token-env">DOCKER</span>=/usr/local/bin/docker
+<span class="token-env">YNAB_TOKEN</span>=<span class="token-arg">YOUR_TOKEN</span>
+
+<span class="token-cmd">$DOCKER</span> run <span class="token-flag">--rm</span> \
+  <span class="token-flag">-e</span> <span class="token-env">YNAB_TOKEN</span>=$YNAB_TOKEN \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--days-back</span> <span class="token-arg">7</span></code></div>
+
+        <p>
+            Make it executable and add it to your crontab:
+        </p>
+
+        <p class="code-label">Make the script executable</p>
+        <div class="code-block"><code><span class="token-cmd">chmod</span> +x ~/scripts/run-ynab-splitter.sh</code></div>
+
+        <p class="code-label">Add to crontab (crontab -e)</p>
+        <div class="code-block"><code><span class="token-comment"># Run every day at 8 AM</span>
+0 8 * * * ~/scripts/run-ynab-splitter.sh >> ~/ynab-splitter.log 2>&1</code></div>
+
+        <div class="callout callout-tip" role="note">
+            <div class="callout-label">Tip</div>
+            <p>
+                Use <code>--days-back 7</code> for cron jobs instead of the default 30.
+                Since you're running it regularly, a week's lookback is plenty &mdash; and it's faster.
+            </p>
+        </div>
+
+        <p>
+            For detailed platform-specific instructions (including macOS-specific tips and how to disable the job later),
+            see the <a href="https://github.com/ZzAve/ynab-split-payee-and-memo#setting-up-a-cron-job-on-macos" target="_blank" rel="noopener">full cron setup guide</a> in the README.
+        </p>
+    </section>
+
+    <!-- ===== SECTION 6: CLI REFERENCE ===== -->
+    <section class="tutorial-section" id="cli-reference" aria-labelledby="cli-reference-heading">
+        <div class="section-badge">
+            <div class="section-number" aria-hidden="true">6</div>
+            <span class="section-label">Reference</span>
+        </div>
+        <h2 id="cli-reference-heading">CLI reference</h2>
+        <p>
+            Every flag and option at a glance. All flags can also be set via the corresponding
+            environment variable where noted.
+        </p>
+
+        <div class="cli-ref" role="list">
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">-t, --token <span class="tag tag-required">Required</span></div>
+                <div class="cli-ref-desc">Your YNAB Personal Access Token. This is how the tool authenticates with the YNAB API.</div>
+                <div class="cli-ref-meta">Env: <code>YNAB_TOKEN</code></div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">-b, --budget-id</div>
+                <div class="cli-ref-desc">Target a specific YNAB budget. If omitted, the tool uses your last-used budget.</div>
+                <div class="cli-ref-meta">Env: <code>YNAB_BUDGET_ID</code></div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">--budget-ids</div>
+                <div class="cli-ref-desc">Comma-separated list of budget IDs to process multiple budgets in one run. Cannot be used with <code>--budget-id</code>.</div>
+                <div class="cli-ref-meta">Env: <code>YNAB_BUDGET_IDS</code></div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">-a, --account-id</div>
+                <div class="cli-ref-desc">Only process transactions from a specific account. If omitted, all accounts are processed.</div>
+                <div class="cli-ref-meta">Env: <code>YNAB_ACCOUNT_ID</code></div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">-d, --days-back <span class="tag tag-default">Default: 30</span></div>
+                <div class="cli-ref-desc">How many days of transaction history to look back. Increase for a one-time bulk cleanup; decrease for faster cron runs.</div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">--dry-run</div>
+                <div class="cli-ref-desc">Preview mode. Logs what would be changed without actually updating any transactions. Always a good idea for your first run.</div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">--only-unapproved <span class="tag tag-default">Default: true</span></div>
+                <div class="cli-ref-desc">Only process unapproved (newly imported) transactions. This is the default behavior.</div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">--all</div>
+                <div class="cli-ref-desc">Process all eligible transactions regardless of approval status. Opposite of <code>--only-unapproved</code>.</div>
+            </div>
+
+            <div class="cli-ref-item" role="listitem">
+                <div class="cli-ref-flags">-v, --verbose</div>
+                <div class="cli-ref-desc">Enable debug logging for more detailed output. Useful for troubleshooting.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <span class="sep" aria-hidden="true"></span>
+            <a href="https://github.com/ZzAve/ynab-split-payee-and-memo" target="_blank" rel="noopener">GitHub</a>
+            <span class="sep" aria-hidden="true"></span>
+            <a href="https://github.com/ZzAve/ynab-split-payee-and-memo/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+        </div>
+        <p class="footer-tagline">Made with &#9749; and frustration at messy payees</p>
+    </footer>
+
+</body>
+</html>

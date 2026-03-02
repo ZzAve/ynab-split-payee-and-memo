@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6169ff"/>
+      <stop offset="100%" stop-color="#545bfe"/>
+    </linearGradient>
+    <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#545bfe"/>
+      <stop offset="100%" stop-color="#454cf2"/>
+    </linearGradient>
+    <filter id="gl">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Left block — skewed cut on the right edge, suggesting the split action -->
+  <path d="M7 10 C7 7.2 9.2 5 12 5 L26 5 L22 59 L12 59 C9.2 59 7 56.8 7 54 Z"
+        fill="url(#lg)" opacity="0.82"/>
+
+  <!-- Right block — skewed cut on the left edge, mirror of the split -->
+  <path d="M38 5 L52 5 C54.8 5 57 7.2 57 10 L57 54 C57 56.8 54.8 59 52 59 L42 59 Z"
+        fill="url(#rg)"/>
+
+  <!-- Green separator dash — the core " - " concept -->
+  <rect x="26.5" y="28.5" width="11" height="3.5" rx="1.75" fill="#2ec271" filter="url(#gl)"/>
+
+  <!-- Left block: faded text lines (the "messy combined" side) -->
+  <rect x="11.5" y="16" width="12"  height="2" rx="1" fill="#fff" opacity="0.5"/>
+  <rect x="11.5" y="22" width="8.5" height="2" rx="1" fill="#fff" opacity="0.3"/>
+  <rect x="12"   y="36" width="10"  height="2" rx="1" fill="#fff" opacity="0.5"/>
+  <rect x="12"   y="42" width="7"   height="2" rx="1" fill="#fff" opacity="0.3"/>
+
+  <!-- Right block: brighter text lines (the "clean separated" side) -->
+  <rect x="42" y="16" width="11" height="2" rx="1" fill="#fff" opacity="0.75"/>
+  <rect x="42" y="22" width="8"  height="2" rx="1" fill="#fff" opacity="0.5"/>
+  <rect x="42" y="36" width="10" height="2" rx="1" fill="#fff" opacity="0.75"/>
+  <rect x="42" y="42" width="6"  height="2" rx="1" fill="#fff" opacity="0.5"/>
+</svg>

@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YNAB Split Payee and Memo</title>
+    <meta name="description" content="Automatically split messy YNAB transaction payees into clean Payee and Memo fields.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M7 10C7 7.2 9.2 5 12 5L26 5 22 59 12 59C9.2 59 7 56.8 7 54Z' fill='%23545bfe' opacity='0.82'/%3E%3Cpath d='M38 5L52 5C54.8 5 57 7.2 57 10V54C57 56.8 54.8 59 52 59L42 59Z' fill='%23545bfe'/%3E%3Crect x='26.5' y='28.5' width='11' height='3.5' rx='1.75' fill='%232ec271'/%3E%3Crect x='11.5' y='16' width='12' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='11.5' y='22' width='8.5' height='2' rx='1' fill='%23fff' opacity='0.3'/%3E%3Crect x='12' y='36' width='10' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='12' y='42' width='7' height='2' rx='1' fill='%23fff' opacity='0.3'/%3E%3Crect x='42' y='16' width='11' height='2' rx='1' fill='%23fff' opacity='0.75'/%3E%3Crect x='42' y='22' width='8' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='42' y='36' width='10' height='2' rx='1' fill='%23fff' opacity='0.75'/%3E%3Crect x='42' y='42' width='6' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3C/svg%3E">
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-dark: #181b2e;
+            --bg-dark-lighter: #1e2140;
+            --accent-purple: #545bfe;
+            --accent-purple-glow: rgba(84, 91, 254, 0.25);
+            --accent-green: #2ec271;
+            --accent-green-glow: rgba(46, 194, 113, 0.15);
+            --accent-red: #e84855;
+            --text-primary: #eef0f8;
+            --text-secondary: #a0a5c0;
+            --text-muted: #6b7194;
+            --ynab-cream: #fef9ed;
+            --ynab-cream-alt: #fdf5e2;
+            --ynab-navy: #1c1f58;
+            --ynab-navy-light: #292d6b;
+            --ynab-border: #e8dcc8;
+            --ynab-text: #3a3352;
+            --ynab-text-light: #8e87a0;
+            --code-bg: #12142a;
+            --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== NOISE OVERLAY FOR TEXTURE ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== SECTION WRAPPER ===== */
+        .section { position: relative; z-index: 1; }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -40%; left: 50%; transform: translateX(-50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, var(--accent-purple-glow) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -20%; right: -10%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, var(--accent-green-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-content { position: relative; z-index: 2; max-width: 820px; }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.8rem;
+            color: var(--text-primary);
+        }
+
+        .hero h1 .accent {
+            color: var(--accent-purple);
+            display: block;
+            position: relative;
+        }
+
+        .hero h1 .accent::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 50%; transform: translateX(-50%);
+            width: 120px; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
+            border-radius: 2px;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-secondary);
+            max-width: 640px;
+            margin: 0 auto 3rem;
+            line-height: 1.7;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 1rem 2.2rem;
+            background: var(--accent-purple);
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            box-shadow: 0 4px 24px var(--accent-purple-glow), 0 1px 3px rgba(0,0,0,0.3);
+            letter-spacing: 0.01em;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(84, 91, 254, 0.4), 0 2px 8px rgba(0,0,0,0.3);
+            background: #6169ff;
+        }
+
+        .cta-btn:active { transform: translateY(0); }
+
+        .cta-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        /* ===== BEFORE/AFTER SECTION ===== */
+        .comparison {
+            padding: 5rem 2rem 6rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .comparison::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(84, 91, 254, 0.25), transparent);
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .section-heading h2 {
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-heading p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .panels-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .panel-wrapper { position: relative; }
+
+        .panel-label {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.02em;
+        }
+
+        .panel-label.before { color: var(--accent-red); }
+        .panel-label.after { color: var(--accent-green); }
+
+        /* YNAB-style panel */
+        .ynab-panel {
+            background: var(--ynab-cream);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.15),
+                0 12px 40px rgba(0,0,0,0.25),
+                inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        .ynab-header {
+            background: var(--ynab-navy);
+            padding: 0.65rem 1rem;
+            display: grid;
+            grid-template-columns: 24px 60px 1fr 1fr;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .ynab-header span {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .ynab-rows { padding: 0; }
+
+        .ynab-row {
+            display: grid;
+            grid-template-columns: 24px 60px 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            align-items: center;
+            border-bottom: 1px solid var(--ynab-border);
+        }
+
+        .ynab-check {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            text-align: center;
+        }
+
+        .ynab-header .ynab-check {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+        }
+
+        .ynab-row:last-child { border-bottom: none; }
+        .ynab-row:nth-child(even) { background: var(--ynab-cream-alt); }
+
+        .ynab-row .date {
+            font-size: 0.8rem;
+            color: var(--ynab-text-light);
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ynab-row .payee {
+            font-size: 0.82rem;
+            color: var(--ynab-text);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ynab-row .memo {
+            font-size: 0.8rem;
+            color: var(--ynab-text-light);
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ynab-row .memo.empty {
+            color: #c8bfaa;
+        }
+
+        /* ===== TRUST / SAFETY SECTION ===== */
+        .trust {
+            padding: 5rem 2rem 6rem;
+            position: relative;
+        }
+
+        .trust::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(84, 91, 254, 0.25), transparent);
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .trust-card {
+            background: var(--bg-dark-lighter);
+            border: 1px solid rgba(84, 91, 254, 0.12);
+            border-radius: 14px;
+            padding: 2rem 1.6rem;
+            position: relative;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .trust-card:hover {
+            border-color: rgba(84, 91, 254, 0.3);
+            box-shadow: 0 4px 20px rgba(84, 91, 254, 0.08);
+        }
+
+        .trust-card-icon {
+            width: 44px; height: 44px;
+            background: rgba(84, 91, 254, 0.1);
+            border: 1px solid rgba(84, 91, 254, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 1.1rem;
+            line-height: 1;
+        }
+
+        .trust-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.55rem;
+            color: var(--text-primary);
+        }
+
+        .trust-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .trust-card:nth-child(1) { animation: fadeInUp 0.5s ease-out 0.1s both; }
+        .trust-card:nth-child(2) { animation: fadeInUp 0.5s ease-out 0.2s both; }
+        .trust-card:nth-child(3) { animation: fadeInUp 0.5s ease-out 0.3s both; }
+        .trust-card:nth-child(4) { animation: fadeInUp 0.5s ease-out 0.4s both; }
+
+        /* ===== GET STARTED SECTION ===== */
+        .get-started {
+            padding: 5rem 2rem 6rem;
+            position: relative;
+        }
+
+        .get-started::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(84, 91, 254, 0.25), transparent);
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .step-card {
+            background: var(--bg-dark-lighter);
+            border: 1px solid rgba(84, 91, 254, 0.12);
+            border-radius: 14px;
+            padding: 2rem 1.6rem;
+            position: relative;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .step-card:hover {
+            border-color: rgba(84, 91, 254, 0.3);
+            box-shadow: 0 4px 20px rgba(84, 91, 254, 0.08);
+        }
+
+        .step-badge {
+            width: 40px; height: 40px;
+            background: var(--accent-purple);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.05rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 12px var(--accent-purple-glow);
+        }
+
+        .step-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.65rem;
+            color: var(--text-primary);
+        }
+
+        .step-card p {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .step-card a {
+            color: var(--accent-purple);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(84, 91, 254, 0.3);
+            transition: border-color 0.2s;
+        }
+
+        .step-card a:hover { border-color: var(--accent-purple); }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid rgba(84, 91, 254, 0.15);
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            margin-top: 0.8rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: #c5cae8;
+            white-space: pre;
+            line-height: 1.5;
+        }
+
+        .code-block code .token-flag { color: var(--accent-green); }
+        .code-block code .token-url { color: #88a4e6; }
+        .code-block code .token-arg { color: #ffa657; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2.5rem 2rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--accent-purple); }
+
+        .footer-links .sep {
+            width: 4px; height: 4px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .footer-tagline {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* ===== TOP NAV ===== */
+        .top-nav {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1.2rem;
+            padding: 1rem 2rem;
+        }
+
+        .top-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .top-nav a:hover { color: var(--accent-purple); }
+
+        .nav-sep {
+            width: 3px; height: 3px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            display: inline-block;
+            opacity: 0.5;
+        }
+
+        /* ===== TUTORIAL LINK ===== */
+        .tutorial-link-wrap {
+            text-align: center;
+            max-width: 1000px;
+            margin: 2rem auto 0;
+        }
+
+        .tutorial-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-purple);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.7rem 1.4rem;
+            border: 1px solid rgba(84, 91, 254, 0.25);
+            border-radius: 10px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .tutorial-link:hover {
+            background: rgba(84, 91, 254, 0.06);
+            border-color: rgba(84, 91, 254, 0.45);
+        }
+
+        .tutorial-link svg {
+            width: 18px; height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* ===== HERO LOGO ===== */
+        .hero-logo {
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.8rem;
+            filter: drop-shadow(0 0 18px rgba(84, 91, 254, 0.4)) drop-shadow(0 0 6px rgba(84, 91, 254, 0.2));
+            animation: logoFadeIn 0.8s ease-out both;
+        }
+
+        @keyframes logoFadeIn {
+            from { opacity: 0; transform: translateY(16px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-content { animation: fadeInUp 0.7s ease-out both; }
+        .hero .subtitle { animation: fadeInUp 0.7s ease-out 0.15s both; }
+        .cta-btn { animation: fadeInUp 0.7s ease-out 0.3s both; }
+
+        .panel-wrapper:first-child { animation: fadeInUp 0.6s ease-out 0.1s both; }
+        .panel-wrapper:last-child { animation: fadeInUp 0.6s ease-out 0.25s both; }
+
+        .step-card:nth-child(1) { animation: fadeInUp 0.5s ease-out 0.1s both; }
+        .step-card:nth-child(2) { animation: fadeInUp 0.5s ease-out 0.2s both; }
+        .step-card:nth-child(3) { animation: fadeInUp 0.5s ease-out 0.3s both; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .hero { min-height: 70vh; padding: 4rem 1.5rem 3.5rem; }
+
+            .panels-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                max-width: 520px;
+            }
+
+            .trust-grid {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+            }
+
+            .ynab-header,
+            .ynab-row {
+                grid-template-columns: 20px 48px 1fr 1fr;
+                gap: 0.35rem;
+            }
+
+            .ynab-header span { font-size: 0.58rem; }
+            .ynab-row .date { font-size: 0.72rem; }
+            .ynab-row .payee { font-size: 0.75rem; }
+            .ynab-row .memo { font-size: 0.72rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.8rem; }
+
+            .ynab-header,
+            .ynab-row {
+                grid-template-columns: 18px 42px 1fr 0.8fr;
+                padding-left: 0.6rem;
+                padding-right: 0.6rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-delay: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TOP NAV ===== -->
+    <nav class="top-nav" aria-label="Site navigation">
+        <a href="usage.html">Usage Guide</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a href="https://github.com/ZzAve/ynab-split-payee-and-memo" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <header class="hero section">
+        <div class="hero-content">
+            <svg class="hero-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="logo-lg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#6169ff"/>
+                        <stop offset="100%" stop-color="#545bfe"/>
+                    </linearGradient>
+                    <linearGradient id="logo-rg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#545bfe"/>
+                        <stop offset="100%" stop-color="#454cf2"/>
+                    </linearGradient>
+                    <filter id="logo-gl">
+                        <feGaussianBlur stdDeviation="2" result="b"/>
+                        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <path d="M7 10C7 7.2 9.2 5 12 5L26 5 22 59 12 59C9.2 59 7 56.8 7 54Z" fill="url(#logo-lg)" opacity="0.82"/>
+                <path d="M38 5L52 5C54.8 5 57 7.2 57 10V54C57 56.8 54.8 59 52 59L42 59Z" fill="url(#logo-rg)"/>
+                <rect x="26.5" y="28.5" width="11" height="3.5" rx="1.75" fill="#2ec271" filter="url(#logo-gl)"/>
+                <rect x="11.5" y="16" width="12" height="2" rx="1" fill="#fff" opacity="0.5"/>
+                <rect x="11.5" y="22" width="8.5" height="2" rx="1" fill="#fff" opacity="0.3"/>
+                <rect x="12" y="36" width="10" height="2" rx="1" fill="#fff" opacity="0.5"/>
+                <rect x="12" y="42" width="7" height="2" rx="1" fill="#fff" opacity="0.3"/>
+                <rect x="42" y="16" width="11" height="2" rx="1" fill="#fff" opacity="0.75"/>
+                <rect x="42" y="22" width="8" height="2" rx="1" fill="#fff" opacity="0.5"/>
+                <rect x="42" y="36" width="10" height="2" rx="1" fill="#fff" opacity="0.75"/>
+                <rect x="42" y="42" width="6" height="2" rx="1" fill="#fff" opacity="0.5"/>
+            </svg>
+            <h1>
+                Your bank stuffs everything into one field.<br>
+                <span class="accent">Let's fix that.</span>
+            </h1>
+            <p class="subtitle">
+                YNAB Split Payee and Memo automatically cleans up your imported transactions
+                &mdash; separating messy payee descriptions into proper Payee and Memo fields.
+            </p>
+            <a href="https://github.com/ZzAve/ynab-split-payee-and-memo" class="cta-btn" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                View on GitHub
+            </a>
+        </div>
+    </header>
+
+    <!-- ===== BEFORE / AFTER ===== -->
+    <section class="comparison section">
+        <div class="section-heading">
+            <h2>See the difference</h2>
+            <p>From chaotic bank imports to tidy, searchable transactions.</p>
+        </div>
+
+        <div class="panels-grid">
+            <!-- BEFORE PANEL -->
+            <div class="panel-wrapper">
+                <div class="panel-label before">Before &#x1F629;</div>
+                <div class="ynab-panel" role="table" aria-label="YNAB transactions before cleanup">
+                    <div class="ynab-header" role="row">
+                        <span class="ynab-check" role="columnheader" aria-label="Status">&#x2713;</span>
+                        <span role="columnheader">Date</span>
+                        <span role="columnheader">Payee</span>
+                        <span role="columnheader">Memo</span>
+                    </div>
+                    <div class="ynab-rows" role="rowgroup">
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/28</span>
+                            <span class="payee" role="cell">ALBERT HEIJN 1576 - AMSTERDAM</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/27</span>
+                            <span class="payee" role="cell">AMAZON.COM - KOTLIN IN ACTION</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/26</span>
+                            <span class="payee" role="cell">COOLBLUE - WIRELESS MOUSE</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/25</span>
+                            <span class="payee" role="cell">SHELL - FUEL STATION A2</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/24</span>
+                            <span class="payee" role="cell">THUISBEZORGD.NL - ORDER 847291</span>
+                            <span class="memo empty" role="cell">&mdash;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AFTER PANEL -->
+            <div class="panel-wrapper">
+                <div class="panel-label after">After &#x1F389;</div>
+                <div class="ynab-panel" role="table" aria-label="YNAB transactions after cleanup">
+                    <div class="ynab-header" role="row">
+                        <span class="ynab-check" role="columnheader" aria-label="Status">&#x2713;</span>
+                        <span role="columnheader">Date</span>
+                        <span role="columnheader">Payee</span>
+                        <span role="columnheader">Memo</span>
+                    </div>
+                    <div class="ynab-rows" role="rowgroup">
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/28</span>
+                            <span class="payee" role="cell">ALBERT HEIJN 1576</span>
+                            <span class="memo" role="cell">AMSTERDAM</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/27</span>
+                            <span class="payee" role="cell">AMAZON.COM</span>
+                            <span class="memo" role="cell">KOTLIN IN ACTION</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/26</span>
+                            <span class="payee" role="cell">COOLBLUE</span>
+                            <span class="memo" role="cell">WIRELESS MOUSE</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/25</span>
+                            <span class="payee" role="cell">SHELL</span>
+                            <span class="memo" role="cell">FUEL STATION A2</span>
+                        </div>
+                        <div class="ynab-row" role="row">
+                            <span class="ynab-check" role="cell" aria-label="Cleared">&#x2713;</span>
+                            <span class="date" role="cell">02/24</span>
+                            <span class="payee" role="cell">THUISBEZORGD.NL</span>
+                            <span class="memo" role="cell">ORDER 847291</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TRUST / SAFETY ===== -->
+    <section class="trust section">
+        <div class="section-heading">
+            <h2>Your data, your rules</h2>
+            <p>No sneaky stuff. Here's exactly how it works under the hood.</p>
+        </div>
+
+        <div class="trust-grid">
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F6AB;</div>
+                <h3>No bank connection</h3>
+                <p>The tool only talks to the YNAB API. It never connects to your bank and your bank credentials are never involved &mdash; not even close.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F3E0;</div>
+                <h3>Runs locally, stores nothing</h3>
+                <p>You run your own Docker container on your machine. There's no cloud service, no database, and no data leaves your device (except to YNAB's own API). Your token stays with you.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F3AF;</div>
+                <h3>Scoped to your budget</h3>
+                <p>You control exactly which YNAB budget &mdash; and optionally which account &mdash; the tool touches. It only modifies the transactions you point it at.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F512;</div>
+                <h3>Existing memos preserved</h3>
+                <p>Already wrote a memo? It won't be overwritten. The split result is appended to existing content, never replaced. Your notes stay intact.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== GET STARTED ===== -->
+    <section class="get-started section">
+        <div class="section-heading">
+            <h2>Three steps. One command. Clean payees forever.</h2>
+        </div>
+
+        <div class="steps-grid">
+            <!-- Step 1 -->
+            <div class="step-card">
+                <div class="step-badge">1</div>
+                <h3>Grab your YNAB token</h3>
+                <p>
+                    Head to <a href="https://app.ynab.com/settings/developer" target="_blank" rel="noopener">YNAB Developer Settings</a>
+                    and create a Personal Access Token.
+                </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card">
+                <div class="step-badge">2</div>
+                <h3>Run one command</h3>
+                <p>Fire up Docker and let it rip:</p>
+                <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
+  <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
+  <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span></code></div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card">
+                <div class="step-badge">3</div>
+                <h3>That's it. Seriously.</h3>
+                <p>
+                    Set up a <a href="https://github.com/ZzAve/ynab-split-payee-and-memo#setting-up-a-cron-job-on-macos" target="_blank" rel="noopener">cron job</a>
+                    and never think about messy payees again.
+                </p>
+            </div>
+        </div>
+
+        <div class="tutorial-link-wrap">
+            <a href="usage.html" class="tutorial-link">
+                <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h12M11 5l4 4-4 4"/></svg>
+                Read the full tutorial
+            </a>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="section">
+        <div class="footer-links">
+            <a href="usage.html">Usage Guide</a>
+            <span class="sep" aria-hidden="true"></span>
+            <a href="https://github.com/ZzAve/ynab-split-payee-and-memo" target="_blank" rel="noopener">GitHub</a>
+            <span class="sep" aria-hidden="true"></span>
+            <a href="https://github.com/ZzAve/ynab-split-payee-and-memo/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+        </div>
+        <p class="footer-tagline">Made with &#9749; and frustration at messy payees</p>
+    </footer>
+
+</body>
+</html>
