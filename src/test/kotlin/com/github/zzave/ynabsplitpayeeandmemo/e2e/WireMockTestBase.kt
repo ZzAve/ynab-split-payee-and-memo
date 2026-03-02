@@ -51,7 +51,7 @@ abstract class WireMockTestBase(body: WireMockTestBase.() -> Unit) : FunSpec() {
             wireMockServer = WireMockServer(
                 WireMockConfiguration.options()
                     .dynamicPort()  // Use random available port (not fixed 8080)
-                    .disableRequestJournal()  // Reduce memory usage
+                    // Note: Request journal enabled for E2E tests to allow verification
             )
             wireMockServer.start()
         }
