@@ -11,7 +11,7 @@
 
 - [x] **Phase 1: CLI Configuration** - Add --api-url flag and env var support so tests can point CLI at mock server ✓ Complete
 - [x] **Phase 2: Test Infrastructure Setup** - Establish WireMock mock server, ProcessBuilder CLI invocation, and test harness ✓ Complete
-- [ ] **Phase 3: Core E2E Tests** - Validate happy path (splitting, batching) and auth failure handling
+- [x] **Phase 3: Core E2E Tests** - Validate happy path (splitting, batching) and auth failure handling ✓ Complete
 - [ ] **Phase 4: Edge Case Coverage** - Test empty budgets, already-split transactions, separators, transfers, and dry-run mode
 
 ---
@@ -72,11 +72,11 @@ Plans:
   3. CLI exits with non-zero code and logs clear error when token is invalid (401 response)
   4. Happy path test passes with realistic transaction data and API responses
 
-**Plans:** 2 plans
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 03-01-PLAN.md — Happy path test with transaction splitting and batch API calls
-- [ ] 03-02-PLAN.md — Auth error test validating 401 handling and early exit
+- [x] 03-01-PLAN.md — Happy path test with transaction splitting and batch API calls ✓ Complete (03-01-SUMMARY.md)
+- [x] 03-02-PLAN.md — Auth error test validating 401 handling and early exit ✓ Complete (03-02-SUMMARY.md)
 
 ---
 

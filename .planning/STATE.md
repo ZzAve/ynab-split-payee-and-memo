@@ -2,21 +2,21 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 02
-status: unknown
-last_updated: "2026-03-02T15:27:51.466Z"
+current_phase: 03
+status: in-progress
+last_updated: "2026-03-02T16:40:34Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 5
+  completed_plans: 4
 ---
 
 # STATE: YNAB Split Payee & Memo — E2E Test Suite
 
 **Project:** End-to-end test suite for YNAB split-payee-and-memo CLI
 **Initialized:** 2026-03-02
-**Current Phase:** 02
+**Current Phase:** 03
 
 ---
 
@@ -39,15 +39,15 @@ progress:
 | Aspect | Status |
 |--------|--------|
 | **Roadmap** | Complete ✓ |
-| **Current Phase** | 2 (Test Infrastructure Setup) — 2/2 plans complete |
-| **Phase Plan** | 02-02-PLAN.md complete, Phase 2 complete |
-| **Progress** | 2/4 phases complete, 3 plans complete |
+| **Current Phase** | 3 (Core E2E Tests) — 1/2 plans complete |
+| **Phase Plan** | 03-01-PLAN.md complete |
+| **Progress** | 2/4 phases complete, 4/5 plans complete |
 
 **Progress Bar:**
 ```
 Roadmap    [████████████████████████████] 100%
-Phase 2    [████████████████████████████] 100%
-Overall    [██████████████                ] 50%
+Phase 3    [██████████████                ] 50%
+Overall    [██████████████████            ] 80%
 ```
 
 ---
@@ -83,6 +83,8 @@ Overall    [██████████████                ] 50%
 | Glob pattern for JAR discovery | Automatic JAR finding without version hardcoding | ✓ Implemented (Phase 2.2) |
 | Enable WireMock request journal | Required for E2E verification (reverses 2.1 decision) | ✓ Implemented (Phase 2.2) |
 | Correct JVM toolchain to 21 | Match CLAUDE.md spec, system compatibility | ✓ Fixed (Phase 2.2) |
+| Clear YNAB env vars in CliRunner | Prevents host environment from interfering with test arguments | ✓ Implemented (Phase 3.2) |
+| Use wireMockServer.stubFor() | Instance method ensures stubs register on correct server | ✓ Implemented (Phase 3.2) |
 
 ---
 
@@ -169,6 +171,52 @@ Overall    [██████████████                ] 50%
 
 **Next step:** Phase 3 - Core E2E tests (happy path + auth errors)
 
+### Session 5 (2026-03-02) - Phase 3.2 Execution (Auth Error E2E Test)
+
+**Completed:**
+- Executed plan 03-02-PLAN.md (Auth Error E2E Test)
+- Task 1: Created AuthErrorTest validating 401 handling (TDD)
+- Created 03-02-SUMMARY.md
+- Test passes (44 total tests, 43 passing)
+- All verification criteria met
+
+**Key decisions:**
+- Clear YNAB_* environment variables in CliRunner for test isolation
+- Use wireMockServer.stubFor() instance method for correct WireMock behavior
+- Flexible error assertion checking both "401" and "Unauthorized"
+
+**Auto-fixes applied (Rule 2 & 3):**
+- CliRunner environment cleanup (prevents host env interference)
+- WireMock instance method usage (fixes stub registration)
+
+**Blockers:** None
+
+**Next step:** Complete phase 3 with plan 03-01 (happy path test)
+
+### Session 6 (2026-03-02) - Phase 3.1 Execution (Happy Path E2E Test)
+
+**Completed:**
+- Executed plan 03-01-PLAN.md (Happy Path E2E Test with batch processing)
+- Task 1: Created TestFixtures.kt with reusable test helpers (TDD)
+- Task 2: Created HappyPathTest validating 26 transactions and 2 batch PATCH calls (TDD)
+- Created 03-01-SUMMARY.md
+- All tests pass (43 total tests)
+- Phase 3 Plan 1 complete
+
+**Key decisions:**
+- Remove --dry-run flag from E2E tests to validate actual PATCH requests
+- Use wireMockServer.stubFor() instead of static stubFor() for dynamic port support
+- Create 26 transactions to validate batch size handling (25 per batch)
+- Use realistic European transaction names for authenticity
+
+**Auto-fixes applied (Rule 1):**
+- SaveTransactionWithId: Added = null defaults to optional fields (payee_id, category_id, flag_color, etc.)
+- Fixes kotlinx.serialization MissingFieldException when parsing PATCH request bodies
+
+**Blockers:** None
+
+**Next step:** Phase 3 Plan 2 (auth error test) or continue to Phase 4 (edge cases)
+
 ---
 
 ## Performance Metrics
@@ -176,7 +224,7 @@ Overall    [██████████████                ] 50%
 | Metric | Target | Current |
 |--------|--------|---------|
 | Roadmap completion | 100% | 100% ✓ |
-| Requirement coverage | 100% | 38% (5/13 complete) |
+| Requirement coverage | 100% | 46% (6/13 complete) |
 | Orphaned requirements | 0 | 0 ✓ |
 | Success criteria per phase | 2-5 | 4-5 ✓ |
 
@@ -187,6 +235,7 @@ Overall    [██████████████                ] 50%
 | 01-01 | 418s (~7min) | 3 | 8 | ✓ Complete |
 | 02-01 | 385s (~6min) | 2 | 5 | ✓ Complete |
 | 02-02 | 785s (~13min) | 2 | 7 | ✓ Complete |
+| 03-02 | 584s (~10min) | 1 | 2 | ✓ Complete |
 
 ## Session Continuity
 

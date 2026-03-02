@@ -23,7 +23,7 @@
 
 ### Auth & Errors
 
-- [ ] **E2E-03**: CLI exits with non-zero code and clear error on invalid token (401)
+- [x] **E2E-03**: CLI exits with non-zero code and clear error on invalid token (401)
 
 ### Edge Cases
 
@@ -69,7 +69,7 @@
 | TEST-03 | Phase 2 | Complete |
 | E2E-01 | Phase 3 | Pending |
 | E2E-02 | Phase 3 | Pending |
-| E2E-03 | Phase 3 | Pending |
+| E2E-03 | Phase 3 | Complete |
 | E2E-04 | Phase 4 | Pending |
 | E2E-05 | Phase 4 | Pending |
 | E2E-06 | Phase 4 | Pending |
