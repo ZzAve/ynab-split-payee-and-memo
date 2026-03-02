@@ -94,7 +94,11 @@ Plans:
   4. CLI skips transfers (transactions where payee starts with "Transfer : ")
   5. `--dry-run` flag prevents actual API update calls while still validating logic
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Empty budget and skip conditions E2E tests (E2E-04, E2E-05, E2E-06, E2E-07)
+- [ ] 04-02-PLAN.md — Dry-run flag validation E2E test (E2E-08)
 
 ---
 
@@ -105,7 +109,7 @@ Plans:
 | 1. CLI Configuration | 1/1 | Complete | ✓ |
 | 2. Test Infrastructure Setup | 2/2 | Complete | ✓ |
 | 3. Core E2E Tests | 2/2 | Complete | ✓ |
-| 4. Edge Case Coverage | 0/? | Not started | — |
+| 4. Edge Case Coverage | 0/2 | Not started | — |
 
 ---
 
