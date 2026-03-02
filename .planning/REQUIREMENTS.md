@@ -70,10 +70,10 @@
 | E2E-01 | Phase 3 | Complete |
 | E2E-02 | Phase 3 | Complete |
 | E2E-03 | Phase 3 | Complete |
-| E2E-04 | Phase 4 | Pending |
-| E2E-05 | Phase 4 | Pending |
-| E2E-06 | Phase 4 | Pending |
-| E2E-07 | Phase 4 | Pending |
+| E2E-04 | Phase 4 | Complete |
+| E2E-05 | Phase 4 | Complete |
+| E2E-06 | Phase 4 | Complete |
+| E2E-07 | Phase 4 | Complete |
 | E2E-08 | Phase 4 | Pending |
 
 **Coverage:**
