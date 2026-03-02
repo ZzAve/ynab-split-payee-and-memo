@@ -20,6 +20,10 @@ make clean     # Clean build artifacts
 make docker    # Build Docker image
 make run       # Build Docker image + run with .env file
 make dry-run   # Build Docker image + run in dry-run mode
+
+# Test builds (for E2E testing)
+./gradlew shadowJar -PtestBuild=true     # Build JAR with --api-url support
+./gradlew shadowJar                      # Production JAR (rejects --api-url)
 ```
 
 ## Architecture
@@ -56,6 +60,36 @@ Four main classes in `src/main/kotlin/com/github/zzave/ynabsplitpayeeandmemo/`:
 CLI options can also be set via environment variables: `YNAB_TOKEN`, `YNAB_BUDGET_ID`, `YNAB_BUDGET_IDS`, `YNAB_ACCOUNT_ID`. A `.env` file is used by `make run` / `make dry-run`.
 
 Logging is controlled by `YNAB_LOG` env var (`FILE` for file output, otherwise console). Config in `src/main/resources/logback.xml`.
+
+## Testing Infrastructure
+
+The project supports two build modes for testing purposes:
+
+**Production Build** (default):
+- Built with `./gradlew shadowJar` or `make build`
+- Hardcoded YNAB API URL (`https://api.ynab.com/v1`)
+- Rejects `--api-url` flag with error message
+- Used for production deployments
+
+**Test Build** (for E2E testing):
+- Built with `./gradlew shadowJar -PtestBuild=true`
+- Accepts `--api-url` flag to override API base URL
+- Accepts `YNAB_API_URL` environment variable
+- Used for E2E tests against WireMock mock server
+
+**Example test build usage:**
+```bash
+./gradlew shadowJar -PtestBuild=true
+java -jar build/libs/ynab-split-payee-and-memo-*-all.jar \
+  --api-url http://localhost:8080/v1 \
+  --token fake-token \
+  --dry-run
+```
+
+**Implementation:**
+- `BuildInfo.isTestBuild` flag generated at compile time based on `-PtestBuild` property
+- Production builds have `isTestBuild = false` and reject `--api-url` in CLI validation
+- Test builds have `isTestBuild = true` and accept `--api-url` parameter
 
 ## Documentation Site
 
