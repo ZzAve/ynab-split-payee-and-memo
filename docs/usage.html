@@ -669,7 +669,9 @@
             <div class="callout-label">Recommended</div>
             <p>
                 Always use <code>--dry-run</code> the first time. It lets you preview the changes
-                before committing them to your budget. No surprises.
+                before committing them to your budget. Add <code>--verbose</code> for detailed
+                output showing exactly which transactions will be split and how &mdash; really helpful
+                to understand what the tool is doing. No surprises.
             </p>
         </div>
 
@@ -677,7 +679,7 @@
         <div class="code-block"><code>docker run <span class="token-flag">--rm</span> \
   <span class="token-url">ghcr.io/zzave/ynab-split-payee-and-memo</span> \
   <span class="token-flag">--token</span> <span class="token-arg">YOUR_TOKEN</span> \
-  <span class="token-flag">--dry-run</span></code></div>
+  <span class="token-flag">--dry-run</span> <span class="token-flag">--verbose</span></code></div>
 
         <p>
             Here's what happens when you run that command:
@@ -917,7 +919,6 @@
             <div class="cli-ref-item" role="listitem">
                 <div class="cli-ref-flags">-v, --verbose</div>
                 <div class="cli-ref-desc">Enable debug logging for more detailed output. Useful for troubleshooting.</div>
-                <div class="cli-ref-meta">Env: <code>YNAB_VERBOSE</code></div>
             </div>
         </div>
     </section>
