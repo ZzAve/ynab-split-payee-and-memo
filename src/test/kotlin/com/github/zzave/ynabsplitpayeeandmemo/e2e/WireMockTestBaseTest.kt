@@ -1,6 +1,5 @@
 package com.github.zzave.ynabsplitpayeeandmemo.e2e
 
-import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
@@ -10,12 +9,13 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.runBlocking
 
 /**
  * Test that verifies WireMockTestBase provides automatic WireMock server lifecycle management.
  * This test should fail initially (RED) since WireMockTestBase doesn't exist yet.
  */
-class WireMockTestBaseTest : WireMockTestBase() {
+class WireMockTestBaseTest : WireMockTestBase({
 
     test("WireMock server is automatically started before tests") {
         // Access the wireMockServer property - should be started
@@ -30,7 +30,7 @@ class WireMockTestBaseTest : WireMockTestBase() {
         apiBaseUrl shouldContain "/v1"
     }
 
-    test("WireMock server responds to stubbed requests").config(coroutineTestScope = true) {
+    test("WireMock server responds to stubbed requests") {
         // Stub a simple endpoint
         wireMockServer.stubFor(
             com.github.tomakehurst.wiremock.client.WireMock.get("/v1/test")
@@ -42,13 +42,15 @@ class WireMockTestBaseTest : WireMockTestBase() {
         )
 
         // Make HTTP request to verify server is running and responds
-        val client = HttpClient(CIO)
-        val response = client.get("${apiBaseUrl}/test")
+        runBlocking {
+            val client = HttpClient(CIO)
+            val response = client.get("${apiBaseUrl}/test")
 
-        response.status shouldBe HttpStatusCode.OK
-        response.bodyAsText() shouldBe "test response"
+            response.status shouldBe HttpStatusCode.OK
+            response.bodyAsText() shouldBe "test response"
 
-        client.close()
+            client.close()
+        }
     }
 
     test("WireMock server port is dynamic") {
@@ -57,4 +59,4 @@ class WireMockTestBaseTest : WireMockTestBase() {
         port shouldNotBe 8080 // Not using default fixed port
         port shouldNotBe 0    // Should be assigned
     }
-}
+})
