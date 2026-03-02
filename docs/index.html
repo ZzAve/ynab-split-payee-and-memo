@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YNAB Split Payee and Memo</title>
     <meta name="description" content="Automatically split messy YNAB transaction payees into clean Payee and Memo fields.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M7 10C7 7.2 9.2 5 12 5L26 5 22 59 12 59C9.2 59 7 56.8 7 54Z' fill='%23545bfe' opacity='0.82'/%3E%3Cpath d='M38 5L52 5C54.8 5 57 7.2 57 10V54C57 56.8 54.8 59 52 59L42 59Z' fill='%23545bfe'/%3E%3Crect x='26.5' y='28.5' width='11' height='3.5' rx='1.75' fill='%232ec271'/%3E%3Crect x='11.5' y='16' width='12' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='11.5' y='22' width='8.5' height='2' rx='1' fill='%23fff' opacity='0.3'/%3E%3Crect x='12' y='36' width='10' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='12' y='42' width='7' height='2' rx='1' fill='%23fff' opacity='0.3'/%3E%3Crect x='42' y='16' width='11' height='2' rx='1' fill='%23fff' opacity='0.75'/%3E%3Crect x='42' y='22' width='8' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3Crect x='42' y='36' width='10' height='2' rx='1' fill='%23fff' opacity='0.75'/%3E%3Crect x='42' y='42' width='6' height='2' rx='1' fill='%23fff' opacity='0.5'/%3E%3C/svg%3E">
     <style>
         /* ===== RESET & BASE ===== */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -280,6 +281,73 @@
             color: #c8bfaa;
         }
 
+        /* ===== TRUST / SAFETY SECTION ===== */
+        .trust {
+            padding: 5rem 2rem 6rem;
+            position: relative;
+        }
+
+        .trust::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(84, 91, 254, 0.25), transparent);
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .trust-card {
+            background: var(--bg-dark-lighter);
+            border: 1px solid rgba(84, 91, 254, 0.12);
+            border-radius: 14px;
+            padding: 2rem 1.6rem;
+            position: relative;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .trust-card:hover {
+            border-color: rgba(84, 91, 254, 0.3);
+            box-shadow: 0 4px 20px rgba(84, 91, 254, 0.08);
+        }
+
+        .trust-card-icon {
+            width: 44px; height: 44px;
+            background: rgba(84, 91, 254, 0.1);
+            border: 1px solid rgba(84, 91, 254, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 1.1rem;
+            line-height: 1;
+        }
+
+        .trust-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.55rem;
+            color: var(--text-primary);
+        }
+
+        .trust-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .trust-card:nth-child(1) { animation: fadeInUp 0.5s ease-out 0.1s both; }
+        .trust-card:nth-child(2) { animation: fadeInUp 0.5s ease-out 0.2s both; }
+        .trust-card:nth-child(3) { animation: fadeInUp 0.5s ease-out 0.3s both; }
+        .trust-card:nth-child(4) { animation: fadeInUp 0.5s ease-out 0.4s both; }
+
         /* ===== GET STARTED SECTION ===== */
         .get-started {
             padding: 5rem 2rem 6rem;
@@ -480,6 +548,21 @@
             stroke-linejoin: round;
         }
 
+        /* ===== HERO LOGO ===== */
+        .hero-logo {
+            display: block;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.8rem;
+            filter: drop-shadow(0 0 18px rgba(84, 91, 254, 0.4)) drop-shadow(0 0 6px rgba(84, 91, 254, 0.2));
+            animation: logoFadeIn 0.8s ease-out both;
+        }
+
+        @keyframes logoFadeIn {
+            from { opacity: 0; transform: translateY(16px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         /* ===== ANIMATIONS ===== */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(24px); }
@@ -505,6 +588,11 @@
                 grid-template-columns: 1fr;
                 gap: 2rem;
                 max-width: 520px;
+            }
+
+            .trust-grid {
+                grid-template-columns: 1fr;
+                max-width: 480px;
             }
 
             .steps-grid {
@@ -555,6 +643,33 @@
     <!-- ===== HERO ===== -->
     <header class="hero section">
         <div class="hero-content">
+            <svg class="hero-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="logo-lg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#6169ff"/>
+                        <stop offset="100%" stop-color="#545bfe"/>
+                    </linearGradient>
+                    <linearGradient id="logo-rg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#545bfe"/>
+                        <stop offset="100%" stop-color="#454cf2"/>
+                    </linearGradient>
+                    <filter id="logo-gl">
+                        <feGaussianBlur stdDeviation="2" result="b"/>
+                        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <path d="M7 10C7 7.2 9.2 5 12 5L26 5 22 59 12 59C9.2 59 7 56.8 7 54Z" fill="url(#logo-lg)" opacity="0.82"/>
+                <path d="M38 5L52 5C54.8 5 57 7.2 57 10V54C57 56.8 54.8 59 52 59L42 59Z" fill="url(#logo-rg)"/>
+                <rect x="26.5" y="28.5" width="11" height="3.5" rx="1.75" fill="#2ec271" filter="url(#logo-gl)"/>
+                <rect x="11.5" y="16" width="12" height="2" rx="1" fill="#fff" opacity="0.5"/>
+                <rect x="11.5" y="22" width="8.5" height="2" rx="1" fill="#fff" opacity="0.3"/>
+                <rect x="12" y="36" width="10" height="2" rx="1" fill="#fff" opacity="0.5"/>
+                <rect x="12" y="42" width="7" height="2" rx="1" fill="#fff" opacity="0.3"/>
+                <rect x="42" y="16" width="11" height="2" rx="1" fill="#fff" opacity="0.75"/>
+                <rect x="42" y="22" width="8" height="2" rx="1" fill="#fff" opacity="0.5"/>
+                <rect x="42" y="36" width="10" height="2" rx="1" fill="#fff" opacity="0.75"/>
+                <rect x="42" y="42" width="6" height="2" rx="1" fill="#fff" opacity="0.5"/>
+            </svg>
             <h1>
                 Your bank stuffs everything into one field.<br>
                 <span class="accent">Let's fix that.</span>
@@ -666,6 +781,40 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TRUST / SAFETY ===== -->
+    <section class="trust section">
+        <div class="section-heading">
+            <h2>Your data, your rules</h2>
+            <p>No sneaky stuff. Here's exactly how it works under the hood.</p>
+        </div>
+
+        <div class="trust-grid">
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F6AB;</div>
+                <h3>No bank connection</h3>
+                <p>The tool only talks to the YNAB API. It never connects to your bank and your bank credentials are never involved &mdash; not even close.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F3E0;</div>
+                <h3>Runs locally, stores nothing</h3>
+                <p>You run your own Docker container on your machine. There's no cloud service, no database, and no data leaves your device (except to YNAB's own API). Your token stays with you.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F3AF;</div>
+                <h3>Scoped to your budget</h3>
+                <p>You control exactly which YNAB budget &mdash; and optionally which account &mdash; the tool touches. It only modifies the transactions you point it at.</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-card-icon" aria-hidden="true">&#x1F512;</div>
+                <h3>Existing memos preserved</h3>
+                <p>Already wrote a memo? It won't be overwritten. The split result is appended to existing content, never replaced. Your notes stay intact.</p>
             </div>
         </div>
     </section>
