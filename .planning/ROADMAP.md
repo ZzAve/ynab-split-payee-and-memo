@@ -10,7 +10,7 @@
 ## Phases
 
 - [x] **Phase 1: CLI Configuration** - Add --api-url flag and env var support so tests can point CLI at mock server ✓ Complete
-- [ ] **Phase 2: Test Infrastructure Setup** - Establish WireMock mock server, ProcessBuilder CLI invocation, and test harness
+- [x] **Phase 2: Test Infrastructure Setup** - Establish WireMock mock server, ProcessBuilder CLI invocation, and test harness ✓ Complete
 - [ ] **Phase 3: Core E2E Tests** - Validate happy path (splitting, batching) and auth failure handling
 - [ ] **Phase 4: Edge Case Coverage** - Test empty budgets, already-split transactions, separators, transfers, and dry-run mode
 
@@ -51,11 +51,11 @@ Plans:
   3. Test helper captures and exposes CLI exit code, stdout, and stderr for assertions
   4. Mock server simulates YNAB API v1 endpoints (budgets, transactions, batch updates)
 
-**Plans:** 1/2 complete
+**Plans:** 2/2 complete
 
 Plans:
 - [x] 02-01-PLAN.md — Add WireMock dependency and create base test class with automatic server lifecycle ✓ Complete (02-01-SUMMARY.md)
-- [ ] 02-02-PLAN.md — Create ProcessBuilder CLI invocation helper and smoke test scaffold
+- [x] 02-02-PLAN.md — Create ProcessBuilder CLI invocation helper and smoke test scaffold ✓ Complete (02-02-SUMMARY.md)
 
 ---
 
@@ -72,7 +72,11 @@ Plans:
   3. CLI exits with non-zero code and logs clear error when token is invalid (401 response)
   4. Happy path test passes with realistic transaction data and API responses
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Happy path test with transaction splitting and batch API calls
+- [ ] 03-02-PLAN.md — Auth error test validating 401 handling and early exit
 
 ---
 
@@ -99,7 +103,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. CLI Configuration | 1/1 | Complete | ✓ |
-| 2. Test Infrastructure Setup | 1/2 | In Progress | — |
+| 2. Test Infrastructure Setup | 2/2 | Complete | ✓ |
 | 3. Core E2E Tests | 0/2 | Not started | — |
 | 4. Edge Case Coverage | 0/2 | Not started | — |
 
