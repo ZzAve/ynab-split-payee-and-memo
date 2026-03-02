@@ -104,8 +104,8 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. CLI Configuration | 1/1 | Complete | ✓ |
 | 2. Test Infrastructure Setup | 2/2 | Complete | ✓ |
-| 3. Core E2E Tests | 0/2 | Not started | — |
-| 4. Edge Case Coverage | 0/2 | Not started | — |
+| 3. Core E2E Tests | 2/2 | Complete | ✓ |
+| 4. Edge Case Coverage | 0/? | Not started | — |
 
 ---
 
