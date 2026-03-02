@@ -65,6 +65,12 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
         help = "Only process unapproved transactions",
     ).flag("--all", default = true)
 
+    private val apiUrl by option(
+        "--api-url",
+        help = "YNAB API base URL (for testing)",
+        envvar = "YNAB_API_URL",
+    )
+
     private val verbose by option(
         "-v",
         "--verbose",
@@ -107,7 +113,7 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
                 "Either budget-id or budget-ids should be provided, but not both"
             }
 
-            val ynabClient = YnabClient(token)
+            val ynabClient = YnabClient(token, apiUrl ?: "https://api.ynab.com/v1")
 
             // If no budget ID is provided, use the last used budget
             val effectiveBudgetIds: List<String> = getEffectiveBudgetIds(ynabClient, budgetId, budgetIds)
