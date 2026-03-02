@@ -215,7 +215,7 @@
             background: var(--ynab-navy);
             padding: 0.65rem 1rem;
             display: grid;
-            grid-template-columns: 60px 1fr 1fr;
+            grid-template-columns: 24px 60px 1fr 1fr;
             gap: 0.5rem;
             align-items: center;
         }
@@ -232,12 +232,23 @@
 
         .ynab-row {
             display: grid;
-            grid-template-columns: 60px 1fr 1fr;
+            grid-template-columns: 24px 60px 1fr 1fr;
             gap: 0.5rem;
             padding: 0.6rem 1rem;
             align-items: center;
             border-bottom: 1px solid var(--ynab-border);
             transition: background 0.15s ease;
+        }
+
+        .ynab-check {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            text-align: center;
+        }
+
+        .ynab-header .ynab-check {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
         }
 
         .ynab-row:last-child { border-bottom: none; }
@@ -271,15 +282,6 @@
         .ynab-row .memo.empty {
             color: #c8bfaa;
             font-style: italic;
-        }
-
-        /* Subtle arrow between panels on desktop */
-        .arrow-between {
-            display: none;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
         }
 
         /* ===== GET STARTED SECTION ===== */
@@ -451,7 +453,7 @@
 
             .ynab-header,
             .ynab-row {
-                grid-template-columns: 48px 1fr 1fr;
+                grid-template-columns: 20px 48px 1fr 1fr;
                 gap: 0.35rem;
             }
 
@@ -466,7 +468,7 @@
 
             .ynab-header,
             .ynab-row {
-                grid-template-columns: 42px 1fr 0.8fr;
+                grid-template-columns: 18px 42px 1fr 0.8fr;
                 padding-left: 0.6rem;
                 padding-right: 0.6rem;
             }
@@ -506,32 +508,38 @@
                 <div class="panel-label before">Before &#x1F629;</div>
                 <div class="ynab-panel">
                     <div class="ynab-header">
+                        <span class="ynab-check">&#x2713;</span>
                         <span>Date</span>
                         <span>Payee</span>
                         <span>Memo</span>
                     </div>
                     <div class="ynab-rows">
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/28</span>
                             <span class="payee">ALBERT HEIJN 1576 - AMSTERDAM</span>
                             <span class="memo empty">&mdash;</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/27</span>
                             <span class="payee">AMAZON.COM - KOTLIN IN ACTION</span>
                             <span class="memo empty">&mdash;</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/26</span>
                             <span class="payee">COOLBLUE - WIRELESS MOUSE</span>
                             <span class="memo empty">&mdash;</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/25</span>
                             <span class="payee">SHELL - FUEL STATION A2</span>
                             <span class="memo empty">&mdash;</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/24</span>
                             <span class="payee">THUISBEZORGD.NL - ORDER 847291</span>
                             <span class="memo empty">&mdash;</span>
@@ -545,32 +553,38 @@
                 <div class="panel-label after">After &#x1F389;</div>
                 <div class="ynab-panel">
                     <div class="ynab-header">
+                        <span class="ynab-check">&#x2713;</span>
                         <span>Date</span>
                         <span>Payee</span>
                         <span>Memo</span>
                     </div>
                     <div class="ynab-rows">
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/28</span>
                             <span class="payee">ALBERT HEIJN 1576</span>
                             <span class="memo">AMSTERDAM</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/27</span>
                             <span class="payee">AMAZON.COM</span>
                             <span class="memo">KOTLIN IN ACTION</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/26</span>
                             <span class="payee">COOLBLUE</span>
                             <span class="memo">WIRELESS MOUSE</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/25</span>
                             <span class="payee">SHELL</span>
                             <span class="memo">FUEL STATION A2</span>
                         </div>
                         <div class="ynab-row">
+                            <span class="ynab-check">&#x2713;</span>
                             <span class="date">02/24</span>
                             <span class="payee">THUISBEZORGD.NL</span>
                             <span class="memo">ORDER 847291</span>
