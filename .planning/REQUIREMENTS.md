@@ -7,8 +7,8 @@
 
 ### CLI Infrastructure
 
-- [ ] **CLI-01**: Separate Gradle task builds a test JAR with configurable API base URL
-- [ ] **CLI-02**: Production shadow JAR keeps hardcoded YNAB API URL (no override possible)
+- [x] **CLI-01**: Separate Gradle task builds a test JAR with configurable API base URL
+- [x] **CLI-02**: Production shadow JAR keeps hardcoded YNAB API URL (no override possible)
 
 ### Test Infrastructure
 
@@ -62,8 +62,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | Phase 1 | Pending |
-| CLI-02 | Phase 1 | Pending |
+| CLI-01 | Phase 1 | Complete |
+| CLI-02 | Phase 1 | Complete |
 | TEST-01 | Phase 2 | Pending |
 | TEST-02 | Phase 2 | Pending |
 | TEST-03 | Phase 2 | Pending |

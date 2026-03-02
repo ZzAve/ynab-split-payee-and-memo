@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: CLI Configuration** - Add --api-url flag and env var support so tests can point CLI at mock server
+- [x] **Phase 1: CLI Configuration** - Add --api-url flag and env var support so tests can point CLI at mock server ✓ Complete
 - [ ] **Phase 2: Test Infrastructure Setup** - Establish WireMock mock server, ProcessBuilder CLI invocation, and test harness
 - [ ] **Phase 3: Core E2E Tests** - Validate happy path (splitting, batching) and auth failure handling
 - [ ] **Phase 4: Edge Case Coverage** - Test empty budgets, already-split transactions, separators, transfers, and dry-run mode
@@ -31,10 +31,10 @@
   3. Production shadow JAR still uses hardcoded YNAB API URL (no override possible in production builds)
   4. CLI can successfully connect to a mock server at the configured URL
 
-**Plans:** 1 plan
+**Plans:** 1/1 complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Add configurable API URL with production/test build separation
+- [x] 01-01-PLAN.md — Add configurable API URL with production/test build separation ✓ Complete (01-01-SUMMARY.md)
 
 ---
 
