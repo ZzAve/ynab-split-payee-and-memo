@@ -13,8 +13,8 @@
 ### Test Infrastructure
 
 - [x] **TEST-01**: WireMock mock server starts/stops per test, simulating YNAB API v1
-- [ ] **TEST-02**: Tests invoke the test JAR via ProcessBuilder (full CLI invocation)
-- [ ] **TEST-03**: Test helper captures CLI exit code, stdout, and stderr
+- [x] **TEST-02**: Tests invoke the test JAR via ProcessBuilder (full CLI invocation)
+- [x] **TEST-03**: Test helper captures CLI exit code, stdout, and stderr
 
 ### Happy Path
 
@@ -65,8 +65,8 @@
 | CLI-01 | Phase 1 | Complete |
 | CLI-02 | Phase 1 | Complete |
 | TEST-01 | Phase 2 | Complete |
-| TEST-02 | Phase 2 | Pending |
-| TEST-03 | Phase 2 | Pending |
+| TEST-02 | Phase 2 | Complete |
+| TEST-03 | Phase 2 | Complete |
 | E2E-01 | Phase 3 | Pending |
 | E2E-02 | Phase 3 | Pending |
 | E2E-03 | Phase 3 | Pending |

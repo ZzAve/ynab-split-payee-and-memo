@@ -7,9 +7,9 @@ status: in-progress
 last_updated: "2026-03-02T16:04:00.000Z"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # STATE: YNAB Split Payee & Memo — E2E Test Suite
@@ -39,15 +39,15 @@ progress:
 | Aspect | Status |
 |--------|--------|
 | **Roadmap** | Complete ✓ |
-| **Current Phase** | 2 (Test Infrastructure Setup) — 1/2 plans complete |
-| **Phase Plan** | 02-01-PLAN.md complete, 02-02-PLAN.md next |
-| **Progress** | 2/4 phases in progress, 2 plans complete |
+| **Current Phase** | 2 (Test Infrastructure Setup) — 2/2 plans complete |
+| **Phase Plan** | 02-02-PLAN.md complete, Phase 2 complete |
+| **Progress** | 2/4 phases complete, 3 plans complete |
 
 **Progress Bar:**
 ```
 Roadmap    [████████████████████████████] 100%
-Phase 2    [██████████████                ] 50%
-Overall    [████████████                  ] 42%
+Phase 2    [████████████████████████████] 100%
+Overall    [██████████████                ] 50%
 ```
 
 ---
@@ -79,6 +79,10 @@ Overall    [████████████                  ] 42%
 | Clikt echo() for errors | Testable error messages in CLI validation | ✓ Implemented (Phase 1) |
 | Use WireMock standalone | JVM 21 compatibility, includes all dependencies | ✓ Implemented (Phase 2.1) |
 | Use dynamic port allocation | Enables parallel test execution, avoids port conflicts | ✓ Implemented (Phase 2.1) |
+| Use ProcessBuilder for CLI invocation | Real subprocess validates actual JAR behavior | ✓ Implemented (Phase 2.2) |
+| Glob pattern for JAR discovery | Automatic JAR finding without version hardcoding | ✓ Implemented (Phase 2.2) |
+| Enable WireMock request journal | Required for E2E verification (reverses 2.1 decision) | ✓ Implemented (Phase 2.2) |
+| Correct JVM toolchain to 21 | Match CLAUDE.md spec, system compatibility | ✓ Fixed (Phase 2.2) |
 
 ---
 
@@ -138,6 +142,33 @@ Overall    [████████████                  ] 42%
 
 **Next step:** Phase 2.2 - ProcessBuilder CLI invocation harness
 
+### Session 4 (2026-03-02) - Phase 2.2 Execution (CLI Invocation Helper)
+
+**Completed:**
+- Executed plan 02-02-PLAN.md (CLI Invocation Helper & Smoke Test)
+- Task 1: Created CliResult data class and CliRunner helper (TDD)
+- Task 2: Created SmokeTest demonstrating full E2E infrastructure (TDD)
+- Created 02-02-SUMMARY.md
+- All tests pass (31 tests total, including 7 new E2E tests)
+- All verification criteria met
+- Phase 2 complete (2/2 plans)
+
+**Key decisions:**
+- Use ProcessBuilder for CLI subprocess invocation
+- Glob pattern for automatic JAR discovery
+- Build test JAR in beforeSpec hook for automation
+- Enable WireMock request journal for E2E verification (reversed previous decision)
+- Simplified smoke test assertions focusing on infrastructure validation
+
+**Auto-fixes applied (Rule 3):**
+- JVM toolchain 25→21 (system compatibility)
+- BuildInfoTest made agnostic to compile-time flag
+- WireMock request journal enabled (required for verification)
+
+**Blockers:** None
+
+**Next step:** Phase 3 - Core E2E tests (happy path + auth errors)
+
 ---
 
 ## Performance Metrics
@@ -145,7 +176,7 @@ Overall    [████████████                  ] 42%
 | Metric | Target | Current |
 |--------|--------|---------|
 | Roadmap completion | 100% | 100% ✓ |
-| Requirement coverage | 100% | 23% (3/13 complete) |
+| Requirement coverage | 100% | 38% (5/13 complete) |
 | Orphaned requirements | 0 | 0 ✓ |
 | Success criteria per phase | 2-5 | 4-5 ✓ |
 
@@ -155,6 +186,7 @@ Overall    [████████████                  ] 42%
 |------------|----------|-------|-------|--------|
 | 01-01 | 418s (~7min) | 3 | 8 | ✓ Complete |
 | 02-01 | 385s (~6min) | 2 | 5 | ✓ Complete |
+| 02-02 | 785s (~13min) | 2 | 7 | ✓ Complete |
 
 ## Session Continuity
 
