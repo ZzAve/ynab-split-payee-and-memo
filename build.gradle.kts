@@ -25,8 +25,10 @@ kotlin {
 val generateBuildInfo by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/src/main/kotlin")
     val projectVersion = project.version.toString()
+    val isTestBuild = project.findProperty("testBuild")?.toString()?.toBoolean() ?: false
     outputs.dir(outputDir)
     inputs.property("version", projectVersion)
+    inputs.property("testBuild", isTestBuild)
 
     doLast {
         val dir = outputDir.get().asFile.resolve("com/github/zzave/ynabsplitpayeeandmemo")
@@ -37,6 +39,7 @@ val generateBuildInfo by tasks.registering {
             |
             |object BuildInfo {
             |    const val VERSION = "$projectVersion"
+            |    const val isTestBuild = $isTestBuild
             |}
             """.trimMargin()
         )

@@ -29,4 +29,16 @@ class YnabSplitPayeeAndMemoTest : FunSpec({
         result.output shouldNotContain "Missing option \"--api-url\""
         result.output shouldNotContain "no such option"
     }
+
+    test("CLI rejects --api-url in production builds") {
+        // In production builds (isTestBuild = false), --api-url should be rejected
+        val cmd = YnabSplitPayeeAndMemo()
+        val result = cmd.test("--token fake-token --api-url http://localhost:8080/v1 --dry-run")
+
+        // Should exit with error status (Abort throws with status 1)
+        result.statusCode shouldBe 1
+        // Output may be in stdout or stderr depending on logging config
+        val allOutput = result.output + result.stderr
+        allOutput shouldContain "test builds"
+    }
 })

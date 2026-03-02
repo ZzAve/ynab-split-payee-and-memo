@@ -93,6 +93,13 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             appLogger.level = Level.DEBUG
         }
 
+        // Validate that --api-url is only used in test builds
+        if (apiUrl != null && !BuildInfo.isTestBuild) {
+            echo("Error: --api-url is only available in test builds", err = true)
+            logger.error("--api-url is only available in test builds")
+            throw Abort()
+        }
+
         runBlocking {
             logger.info("")
             logger.info("=====================================")
