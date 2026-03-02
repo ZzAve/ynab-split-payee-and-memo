@@ -31,7 +31,10 @@
   3. Production shadow JAR still uses hardcoded YNAB API URL (no override possible in production builds)
   4. CLI can successfully connect to a mock server at the configured URL
 
-**Plans:** TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 01-01-PLAN.md — Add configurable API URL with production/test build separation
 
 ---
 
@@ -91,7 +94,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. CLI Configuration | 0/1 | Not started | — |
+| 1. CLI Configuration | 0/1 | Planned | — |
 | 2. Test Infrastructure Setup | 0/2 | Not started | — |
 | 3. Core E2E Tests | 0/2 | Not started | — |
 | 4. Edge Case Coverage | 0/2 | Not started | — |
