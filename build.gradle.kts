@@ -19,7 +19,7 @@ application {
 }
 
 kotlin {
-    jvmToolchain(25)
+    jvmToolchain(21)
 }
 
 val generateBuildInfo by tasks.registering {
