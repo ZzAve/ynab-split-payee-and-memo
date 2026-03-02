@@ -24,9 +24,15 @@ fun runCli(vararg args: String): CliResult {
     val command = mutableListOf("java", "-jar", jarPath.absolutePath)
     command.addAll(args)
 
-    // Execute process
+    // Execute process with clean environment (no YNAB_* env vars)
+    // This ensures tests have full control over CLI configuration via explicit arguments
     val process = ProcessBuilder(command)
         .directory(File(System.getProperty("user.dir")))
+        .apply {
+            // Remove YNAB environment variables to prevent interference with test arguments
+            val env = environment()
+            env.keys.removeIf { it.startsWith("YNAB_") }
+        }
         .start()
 
     // Capture stdout and stderr
