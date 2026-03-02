@@ -62,25 +62,26 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | — | Pending |
-| CLI-02 | — | Pending |
-| TEST-01 | — | Pending |
-| TEST-02 | — | Pending |
-| TEST-03 | — | Pending |
-| E2E-01 | — | Pending |
-| E2E-02 | — | Pending |
-| E2E-03 | — | Pending |
-| E2E-04 | — | Pending |
-| E2E-05 | — | Pending |
-| E2E-06 | — | Pending |
-| E2E-07 | — | Pending |
-| E2E-08 | — | Pending |
+| CLI-01 | Phase 1 | Pending |
+| CLI-02 | Phase 1 | Pending |
+| TEST-01 | Phase 2 | Pending |
+| TEST-02 | Phase 2 | Pending |
+| TEST-03 | Phase 2 | Pending |
+| E2E-01 | Phase 3 | Pending |
+| E2E-02 | Phase 3 | Pending |
+| E2E-03 | Phase 3 | Pending |
+| E2E-04 | Phase 4 | Pending |
+| E2E-05 | Phase 4 | Pending |
+| E2E-06 | Phase 4 | Pending |
+| E2E-07 | Phase 4 | Pending |
+| E2E-08 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
+
 *Requirements defined: 2026-03-02*
-*Last updated: 2026-03-02 after initial definition*
+*Roadmap traceability updated: 2026-03-02*
