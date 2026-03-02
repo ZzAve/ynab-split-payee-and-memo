@@ -109,13 +109,13 @@ data class SaveTransactionWithId(
     @SerialName("account_id") val accountId: String,
     val date: String,
     val amount: Long,
-    @SerialName("payee_id") val payeeId: String?,
-    @SerialName("payee_name") val payeeName: String?,
-    @SerialName("category_id") val categoryId: String?,
-    val memo: String?,
-    val cleared: String?,
-    val approved: Boolean?,
-    @SerialName("flag_color") val flagColor: String?,
+    @SerialName("payee_id") val payeeId: String? = null,
+    @SerialName("payee_name") val payeeName: String? = null,
+    @SerialName("category_id") val categoryId: String? = null,
+    val memo: String? = null,
+    val cleared: String? = null,
+    val approved: Boolean? = null,
+    @SerialName("flag_color") val flagColor: String? = null,
 )
 
 @Serializable
