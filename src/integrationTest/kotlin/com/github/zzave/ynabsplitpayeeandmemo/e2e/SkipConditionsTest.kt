@@ -17,24 +17,9 @@ import io.kotest.matchers.string.shouldContain
  * - E2E-07: CLI skips transfers where payee starts with "Transfer : "
  *
  * Prerequisites:
- * - Test JAR built with: ./gradlew shadowJar -PtestBuild=true
+ * - Debug JAR built with: ./gradlew debugShadowJar
  */
 class SkipConditionsTest : WireMockTestBase({
-
-    beforeSpec {
-        // Build test JAR once before all tests in this spec
-        val buildProcess = ProcessBuilder("./gradlew", "shadowJar", "-PtestBuild=true")
-            .directory(java.io.File(System.getProperty("user.dir")))
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-
-        val exitCode = buildProcess.waitFor()
-        if (exitCode != 0) {
-            val stderr = buildProcess.errorStream.bufferedReader().readText()
-            throw IllegalStateException("Failed to build test JAR for skip conditions test. Exit code: $exitCode\nError: $stderr")
-        }
-    }
 
     test("CLI skips transactions where payeeName != importPayeeName (already manually changed)") {
         // Create 3 transactions with payeeName != importPayeeName (user manually changed payee)

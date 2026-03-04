@@ -18,27 +18,12 @@ import io.kotest.matchers.shouldNotBe
  * - CLI outputs clear error message
  * - CLI makes zero PATCH calls (stops before making any changes)
  *
- * **Prerequisite:** Test JAR must be built before running:
+ * **Prerequisite:** Debug JAR must be built before running:
  * ```
- * ./gradlew shadowJar -PtestBuild=true
+ * ./gradlew debugShadowJar
  * ```
  */
 class AuthErrorTest : WireMockTestBase({
-
-    beforeSpec {
-        // Build test JAR once before all tests in this spec
-        val buildProcess = ProcessBuilder("./gradlew", "shadowJar", "-PtestBuild=true")
-            .directory(java.io.File(System.getProperty("user.dir")))
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-
-        val exitCode = buildProcess.waitFor()
-        if (exitCode != 0) {
-            val stderr = buildProcess.errorStream.bufferedReader().readText()
-            throw IllegalStateException("Failed to build test JAR for auth error test. Exit code: $exitCode\nError: $stderr")
-        }
-    }
 
     test("CLI exits with non-zero code and clear error on 401 auth failure") {
         // Stub GET /v1/budgets/{id}/transactions with 401 Unauthorized response

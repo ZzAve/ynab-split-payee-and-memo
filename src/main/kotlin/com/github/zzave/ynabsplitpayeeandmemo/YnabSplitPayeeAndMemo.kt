@@ -1,5 +1,6 @@
 package com.github.zzave.ynabsplitpayeeandmemo
 
+import ch.qos.logback.classic.Level
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
@@ -13,9 +14,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
-import ch.qos.logback.classic.Level
 import org.slf4j.LoggerFactory
-import kotlin.collections.isNotEmpty
 import kotlin.time.Clock
 import kotlin.time.measureTimedValue
 
@@ -93,10 +92,10 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             appLogger.level = Level.DEBUG
         }
 
-        // Validate that --api-url is only used in test builds
-        if (apiUrl != null && !BuildInfo.isTestBuild) {
-            echo("Error: --api-url is only available in test builds", err = true)
-            logger.error("--api-url is only available in test builds")
+        // Validate that --api-url is only used in debug builds
+        if (apiUrl != null && !BuildInfo.IS_DEBUG_BUILD) {
+            echo("Error: --api-url is only available in debug builds", err = true)
+            logger.error("--api-url is only available in debug builds")
             throw Abort()
         }
 
@@ -175,14 +174,15 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
         sinceDate: LocalDate,
     ) {
         // Fetch transactions
-        val (transactions, fetchDuration) = measureTimedValue {
-            ynabClient.getTransactions(
-                budgetId = budgetId,
-                accountId = accountId,
-                sinceDate = sinceDate,
-                onlyUnapproved = onlyUnapproved,
-            )
-        }
+        val (transactions, fetchDuration) =
+            measureTimedValue {
+                ynabClient.getTransactions(
+                    budgetId = budgetId,
+                    accountId = accountId,
+                    sinceDate = sinceDate,
+                    onlyUnapproved = onlyUnapproved,
+                )
+            }
 
         logger.info("Found ${transactions.size} transactions (fetched in $fetchDuration)")
 
@@ -214,12 +214,13 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
             return
         }
 
-        val (updatedTransactions, updateDuration) = measureTimedValue {
-            ynabClient.updateTransactions(
-                budgetId = budgetId,
-                transactions = transactionsToUpdate,
-            )
-        }
+        val (updatedTransactions, updateDuration) =
+            measureTimedValue {
+                ynabClient.updateTransactions(
+                    budgetId = budgetId,
+                    transactions = transactionsToUpdate,
+                )
+            }
         logger.info("  Updated ${updatedTransactions.size} transactions in batch (took $updateDuration)")
     }
 }

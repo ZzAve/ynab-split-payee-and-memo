@@ -60,7 +60,7 @@ class CliRunnerTest : FunSpec({
             }
 
             exception.message shouldContain "build/libs directory not found"
-            exception.message shouldContain "./gradlew shadowJar -PtestBuild=true"
+            exception.message shouldContain "./gradlew debugShadowJar"
         } finally {
             // Restore libs directory
             if (tempDir.exists()) {
@@ -73,7 +73,7 @@ class CliRunnerTest : FunSpec({
         val libsDir = File(System.getProperty("user.dir"), "build/libs")
 
         // Temporarily rename any JAR files
-        val jarFiles = libsDir.listFiles { f -> f.name.endsWith("-all.jar") }?.toList() ?: emptyList()
+        val jarFiles = libsDir.listFiles { f -> f.name.endsWith("-debug-all.jar") }?.toList() ?: emptyList()
         val tempNames = jarFiles.map { it to File(libsDir, "${it.name}.hidden") }
 
         tempNames.forEach { (jar, temp) ->
@@ -85,8 +85,8 @@ class CliRunnerTest : FunSpec({
                 runCli("--help")
             }
 
-            exception.message shouldContain "Test JAR not found"
-            exception.message shouldContain "./gradlew shadowJar -PtestBuild=true"
+            exception.message shouldContain "Debug JAR not found"
+            exception.message shouldContain "./gradlew debugShadowJar"
         } finally {
             // Restore JAR files
             tempNames.forEach { (jar, temp) ->

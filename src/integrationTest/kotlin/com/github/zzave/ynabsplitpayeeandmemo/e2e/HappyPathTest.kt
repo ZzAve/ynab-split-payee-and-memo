@@ -17,24 +17,9 @@ import io.kotest.matchers.shouldNotBe
  * - CLI handles 26+ transactions by making multiple batch API calls
  *
  * Prerequisites:
- * - Test JAR built with: ./gradlew shadowJar -PtestBuild=true
+ * - Debug JAR built with: ./gradlew debugShadowJar
  */
 class HappyPathTest : WireMockTestBase({
-
-    beforeSpec {
-        // Build test JAR once before all tests in this spec
-        val buildProcess = ProcessBuilder("./gradlew", "shadowJar", "-PtestBuild=true")
-            .directory(java.io.File(System.getProperty("user.dir")))
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-
-        val exitCode = buildProcess.waitFor()
-        if (exitCode != 0) {
-            val stderr = buildProcess.errorStream.bufferedReader().readText()
-            throw IllegalStateException("Failed to build test JAR for happy path test. Exit code: $exitCode\nError: $stderr")
-        }
-    }
 
     test("CLI splits 26 transactions with correct payee/memo and sends 2 batch PATCH calls") {
         // Create 26 splittable transactions (will trigger 2 batches: 25 + 1)

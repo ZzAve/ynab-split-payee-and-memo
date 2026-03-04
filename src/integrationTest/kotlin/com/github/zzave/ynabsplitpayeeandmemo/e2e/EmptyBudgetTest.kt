@@ -17,24 +17,9 @@ import io.kotest.matchers.string.shouldContain
  * - E2E-04: CLI logs appropriate message about zero transactions found
  *
  * Prerequisites:
- * - Test JAR built with: ./gradlew shadowJar -PtestBuild=true
+ * - Debug JAR built with: ./gradlew debugShadowJar
  */
 class EmptyBudgetTest : WireMockTestBase({
-
-    beforeSpec {
-        // Build test JAR once before all tests in this spec
-        val buildProcess = ProcessBuilder("./gradlew", "shadowJar", "-PtestBuild=true")
-            .directory(java.io.File(System.getProperty("user.dir")))
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-
-        val exitCode = buildProcess.waitFor()
-        if (exitCode != 0) {
-            val stderr = buildProcess.errorStream.bufferedReader().readText()
-            throw IllegalStateException("Failed to build test JAR for empty budget test. Exit code: $exitCode\nError: $stderr")
-        }
-    }
 
     test("CLI exits with code 0 when budget has zero transactions") {
         // Stub GET endpoint returning empty transactions array

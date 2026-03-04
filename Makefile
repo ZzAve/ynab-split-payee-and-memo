@@ -15,6 +15,9 @@ else
 	./gradlew test
 endif
 
+e2e-test:
+	./gradlew integrationTest
+
 yolo:
 	./gradlew build -x test
 
