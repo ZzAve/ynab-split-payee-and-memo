@@ -11,16 +11,21 @@ Kotlin CLI application that uses the YNAB API to split transaction payee descrip
 Use `make` targets as the primary interface for building and testing:
 
 ```bash
-make build     # Full build with tests
-make test      # Run all tests
+make build      # Full build with tests
+make test       # Run unit tests only
 make test TEST=com.github.zzave.ynabsplitpayeeandmemo.TransactionUpdaterTest  # Single test class
 make test TEST="*TransactionUpdaterTest"  # Wildcard pattern
-make yolo      # Build without tests
-make clean     # Clean build artifacts
-make docker    # Build Docker image
-make run       # Build Docker image + run with .env file
-make dry-run   # Build Docker image + run in dry-run mode
+make e2e-test   # Build debug JAR + run E2E integration tests
+make yolo       # Build without tests
+make clean      # Clean build artifacts
+make docker     # Build Docker image
+make run        # Build Docker image + run with .env file
+make dry-run    # Build Docker image + run in dry-run mode
 ```
+
+Two JAR outputs:
+- `./gradlew shadowJar` → `build/libs/*-all.jar` (production, rejects `--api-url`)
+- `./gradlew debugShadowJar` → `build/libs/*-debug-all.jar` (debug, accepts `--api-url`)
 
 ## Architecture
 
@@ -43,7 +48,7 @@ Four main classes in `src/main/kotlin/com/github/zzave/ynabsplitpayeeandmemo/`:
 
 ## Tech Stack
 
-- **Kotlin** with JVM toolchain 21
+- **Kotlin** with JVM toolchain 25
 - **Ktor Client** (CIO engine) for HTTP
 - **Kotlinx Serialization** for JSON
 - **Clikt** for CLI argument parsing
@@ -56,6 +61,31 @@ Four main classes in `src/main/kotlin/com/github/zzave/ynabsplitpayeeandmemo/`:
 CLI options can also be set via environment variables: `YNAB_TOKEN`, `YNAB_BUDGET_ID`, `YNAB_BUDGET_IDS`, `YNAB_ACCOUNT_ID`. A `.env` file is used by `make run` / `make dry-run`.
 
 Logging is controlled by `YNAB_LOG` env var (`FILE` for file output, otherwise console). Config in `src/main/resources/logback.xml`.
+
+## Testing Infrastructure
+
+**Unit tests** (`src/test/`) run via `make test` / `./gradlew test`. No JAR build required.
+
+**E2E integration tests** (`src/integrationTest/`) run via `make e2e-test` / `./gradlew integrationTest`. The `integrationTest` Gradle task automatically builds the debug JAR first.
+
+**Two JAR variants** are produced from a single compilation:
+
+**Production JAR** (`*-all.jar`):
+- Built with `./gradlew shadowJar`
+- Embeds `build-info.properties` with `isDebugBuild=false`
+- Rejects `--api-url` flag with error message
+
+**Debug JAR** (`*-debug-all.jar`):
+- Built with `./gradlew debugShadowJar`
+- Embeds `build-info.properties` with `isDebugBuild=true`
+- Accepts `--api-url` flag to override API base URL
+- Used by E2E tests against WireMock mock server
+
+**Implementation:**
+- `BuildInfo.IS_DEBUG_BUILD` and `BuildInfo.VERSION` are loaded from `/build-info.properties` resource at runtime
+- Both JARs embed `build-info.properties` with the project version
+- Production JAR has `isDebugBuild=false` → rejects `--api-url`
+- Debug JAR has `isDebugBuild=true` → accepts `--api-url`
 
 ## Documentation Site
 

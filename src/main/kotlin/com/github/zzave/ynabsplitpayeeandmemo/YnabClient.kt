@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory
  */
 class YnabClient(
     private val token: String,
+    private val baseUrl: String = "https://api.ynab.com/v1",
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val baseUrl = "https://api.ynab.com/v1"
 
     private val client =
         HttpClient {

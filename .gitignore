@@ -38,8 +38,10 @@ build/
 .DS_Store
 
 .gradle
+.kotlin
 .env
 .idea
 
 logs
 .worktrees
+.planning
