@@ -9,7 +9,7 @@ ktor = "3.4.0"
 logback = "1.5.32"
 kotest = "6.1.4"
 shadow = "9.3.2"
-wiremock = "3.10.0"
+wiremock = "3.13.2"
 
 [libraries]
 kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
