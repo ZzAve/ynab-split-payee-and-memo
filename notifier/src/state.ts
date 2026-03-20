@@ -21,7 +21,8 @@ export const DEFAULT_STATE: NotifierState = {
 
 export function parseState(json: string | null): NotifierState {
   if (!json) return { ...DEFAULT_STATE };
-  return JSON.parse(json) as NotifierState;
+  const parsed = JSON.parse(json) as Partial<NotifierState>;
+  return { ...DEFAULT_STATE, ...parsed };
 }
 
 export function serializeState(state: NotifierState): string {

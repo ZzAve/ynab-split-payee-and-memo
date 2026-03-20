@@ -60,6 +60,9 @@ describe("evaluateRules", () => {
     assert.equal(result.notification, "recovery");
     assert.equal(result.newState.consecutiveFailures, 0);
     assert.equal(result.newState.inFailedState, false);
+    // Context preserves pre-recovery values for the message
+    assert.equal(result.context.failedRunCount, 5);
+    assert.equal(result.context.failedStateSince, "2026-03-20T09:00:00Z");
   });
 
   it("sends daily reminder once per day when in failed state", () => {

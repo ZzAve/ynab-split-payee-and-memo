@@ -61,7 +61,7 @@ function formatMessage(
       );
     case "recovery":
       return formatRecovery(
-        result.newState.failedStateSince ?? new Date().toISOString(),
+        result.context.failedStateSince ?? new Date().toISOString(),
         result.context.failedRunCount ?? 0
       );
     case "daily-reminder":

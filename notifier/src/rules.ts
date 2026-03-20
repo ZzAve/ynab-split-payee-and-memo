@@ -12,6 +12,7 @@ export interface RuleResult {
   newState: NotifierState;
   context: {
     failedRunCount?: number;
+    failedStateSince?: string | null;
     succeededThisWeek?: number;
     failedThisWeek?: number;
   };
@@ -29,11 +30,15 @@ export function evaluateRules(
 
   const newState: NotifierState = { ...state, lastCheckTimestamp: now };
   let notification: NotificationType | null = null;
-  let failedRunCount = state.consecutiveFailures;
+  // Capture pre-recovery values for the recovery message
+  let preRecoveryFailedRunCount = state.consecutiveFailures;
+  let preRecoveryFailedStateSince = state.failedStateSince;
 
   for (const run of sortedRuns) {
     if (run.state === "succeeded") {
       if (newState.inFailedState) {
+        preRecoveryFailedRunCount = newState.consecutiveFailures;
+        preRecoveryFailedStateSince = newState.failedStateSince;
         notification = "recovery";
       }
       newState.consecutiveFailures = 0;
@@ -49,8 +54,6 @@ export function evaluateRules(
       }
     }
   }
-
-  failedRunCount = newState.consecutiveFailures;
 
   // Daily reminder: in failed state, no recovery/new-failure notification, not sent today
   if (
@@ -76,7 +79,7 @@ export function evaluateRules(
   return {
     notification,
     newState,
-    context: { failedRunCount, succeededThisWeek, failedThisWeek },
+    context: { failedRunCount: preRecoveryFailedRunCount, failedStateSince: preRecoveryFailedStateSince, succeededThisWeek, failedThisWeek },
   };
 }
 
