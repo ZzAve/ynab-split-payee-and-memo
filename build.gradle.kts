@@ -102,6 +102,7 @@ dependencies {
     // Logging with SLF4J and Logback
     implementation(libs.logback)
     implementation(libs.janino)
+    implementation(libs.logstash.logback.encoder)
 
     // Kotlinx DateTime
     implementation(libs.kotlinx.datetime)

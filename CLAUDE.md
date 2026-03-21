@@ -60,7 +60,7 @@ Four main classes in `src/main/kotlin/com/github/zzave/ynabsplitpayeeandmemo/`:
 
 CLI options can also be set via environment variables: `YNAB_TOKEN`, `YNAB_BUDGET_ID`, `YNAB_BUDGET_IDS`, `YNAB_ACCOUNT_ID`. A `.env` file is used by `make run` / `make dry-run`.
 
-Logging is controlled by `YNAB_LOG` env var (`FILE` for file output, otherwise console). Config in `src/main/resources/logback.xml`.
+Logging is controlled by two env vars. `YNAB_LOG` sets the destination (`FILE` for file output, otherwise console). `YNAB_LOG_FORMAT` sets the format (`plain` for human-readable text, otherwise JSON via logstash-logback-encoder). Config in `src/main/resources/logback.xml`.
 
 ## Testing Infrastructure
 
