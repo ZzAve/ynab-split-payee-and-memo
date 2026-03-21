@@ -24,3 +24,27 @@ jobs:
 
     - name: Build with Gradle
       run: make build e2e-test
+
+  notifier-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js 24
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+        cache: npm
+        cache-dependency-path: notifier/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: notifier
+
+    - name: Run tests
+      run: npm test
+      working-directory: notifier
+
+    - name: Typecheck
+      run: npm run typecheck
+      working-directory: notifier
