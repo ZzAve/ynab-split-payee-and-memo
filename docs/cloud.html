@@ -417,21 +417,6 @@
             line-height: 1.55;
         }
 
-        .cli-ref-meta {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        .cli-ref-meta code {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            background: var(--code-bg);
-            padding: 0.1rem 0.4rem;
-            border-radius: 4px;
-            color: #d4a0ff;
-        }
-
         .tag {
             display: inline-block;
             font-size: 0.68rem;
@@ -447,11 +432,6 @@
         .tag-required {
             background: rgba(232, 72, 85, 0.12);
             color: var(--accent-red);
-        }
-
-        .tag-default {
-            background: rgba(84, 91, 254, 0.1);
-            color: var(--accent-purple);
         }
 
         /* Inline code */
@@ -594,12 +574,12 @@
         </div>
         <h2 id="prerequisites-heading">Prerequisites</h2>
         <p>
-            Before you start, make sure you have these two things in place.
+            Before you begin, make sure you have the following:
         </p>
 
         <ul class="checklist" role="list">
-            <li>A <strong>Scaleway account</strong> with a project in the Paris or Amsterdam region.</li>
-            <li>A <strong>YNAB Personal Access Token</strong>. If you don't have one yet, see <a href="usage.html#prerequisites">the usage guide</a> for how to create it.</li>
+            <li><span>A <strong>Scaleway account</strong> with a project in the Paris (<code>fr-par</code>) or Amsterdam (<code>nl-ams</code>) region.</span></li>
+            <li><span>A <strong>YNAB Personal Access Token</strong>. If you don't have one yet, follow the steps in the <a href="usage.html#prerequisites">Usage Guide</a>.</span></li>
         </ul>
     </section>
 
@@ -607,11 +587,12 @@
     <section class="tutorial-section" id="create-job" aria-labelledby="create-job-heading">
         <div class="section-badge">
             <div class="section-number" aria-hidden="true">2</div>
-            <span class="section-label">Set it up</span>
+            <span class="section-label">Setup</span>
         </div>
         <h2 id="create-job-heading">Create the job</h2>
         <p>
-            In the Scaleway Console, navigate to <strong>Serverless &rarr; Jobs</strong> and create a new job definition.
+            In the Scaleway Console, navigate to <strong>Serverless &rarr; Jobs</strong>
+            and click <strong>Create Job</strong>.
         </p>
         <p>
             Set the image source to the public Docker image:
@@ -621,7 +602,7 @@
         <div class="code-block"><code><span class="token-url">docker.io/zzave/ynab-split-payee:latest</span></code></div>
 
         <p>
-            For resources, <strong>1 vCPU</strong> and <strong>256 MB RAM</strong> is more than enough.
+            For resources, <strong>1 vCPU</strong> and <strong>256 MB RAM</strong> is plenty.
             The job typically finishes in a few seconds.
         </p>
     </section>
@@ -630,23 +611,23 @@
     <section class="tutorial-section" id="env-vars" aria-labelledby="env-vars-heading">
         <div class="section-badge">
             <div class="section-number" aria-hidden="true">3</div>
-            <span class="section-label">Configure</span>
+            <span class="section-label">Configuration</span>
         </div>
         <h2 id="env-vars-heading">Environment variables</h2>
         <p>
-            Add the following environment variables to your job definition.
+            Add these environment variables to the job definition.
             Only the token is required &mdash; the rest are optional.
         </p>
 
         <div class="cli-ref" role="list">
             <div class="cli-ref-item" role="listitem">
                 <div class="cli-ref-flags">YNAB_TOKEN <span class="tag tag-required">Required</span></div>
-                <div class="cli-ref-desc">Your YNAB Personal Access Token. This is how the tool authenticates with the YNAB API.</div>
+                <div class="cli-ref-desc">Your YNAB Personal Access Token. This is how the job authenticates with the YNAB API.</div>
             </div>
 
             <div class="cli-ref-item" role="listitem">
                 <div class="cli-ref-flags">YNAB_BUDGET_ID</div>
-                <div class="cli-ref-desc">Target a specific YNAB budget. If omitted, the tool uses your last-used budget.</div>
+                <div class="cli-ref-desc">Target a specific budget. If omitted, the job uses your last-used budget.</div>
             </div>
 
             <div class="cli-ref-item" role="listitem">
@@ -664,7 +645,7 @@
             <div class="callout-label">Tip</div>
             <p>
                 Use Scaleway's <strong>secret management</strong> to store your YNAB token
-                rather than adding it as a plain-text environment variable.
+                instead of adding it as a plain-text environment variable.
             </p>
         </div>
     </section>
@@ -673,24 +654,24 @@
     <section class="tutorial-section" id="cron-trigger" aria-labelledby="cron-trigger-heading">
         <div class="section-badge">
             <div class="section-number" aria-hidden="true">4</div>
-            <span class="section-label">Schedule</span>
+            <span class="section-label">Scheduling</span>
         </div>
         <h2 id="cron-trigger-heading">Cron trigger</h2>
         <p>
-            Add a cron trigger to your job so it runs automatically.
-            Every hour is a good default &mdash; frequent enough to catch new imports quickly,
-            light enough to stay well within free-tier limits.
+            Add a cron trigger to run the job on a schedule.
+            Every hour is a good default &mdash; it keeps your transactions tidy
+            without hitting YNAB's rate limits.
         </p>
 
         <p class="code-label">Cron expression (every hour)</p>
         <div class="code-block"><code><span class="token-arg">0 * * * *</span></code></div>
 
         <div class="callout callout-info" role="note">
-            <div class="callout-label">Note</div>
+            <div class="callout-label">Timezone</div>
             <p>
                 Scaleway cron triggers use <strong>UTC</strong>.
-                If you'd rather run it at a specific local time (e.g. every morning at 8 AM),
-                adjust the hour accordingly.
+                If you want to limit runs to your local business hours, adjust the
+                hour field accordingly.
             </p>
         </div>
     </section>
@@ -699,24 +680,27 @@
     <section class="tutorial-section" id="verify" aria-labelledby="verify-heading">
         <div class="section-badge">
             <div class="section-number" aria-hidden="true">5</div>
-            <span class="section-label">Confirm</span>
+            <span class="section-label">Confirm it works</span>
         </div>
         <h2 id="verify-heading">Verify</h2>
         <p>
-            Before relying on the schedule, trigger a manual run from the Scaleway console
-            to make sure everything is wired up correctly.
+            Before relying on the schedule, trigger a <strong>manual run</strong>
+            from the Scaleway console to make sure everything is wired up correctly.
         </p>
 
-        <ul class="checklist" role="list">
-            <li><strong>Trigger a manual run</strong> from the job detail page in the Scaleway console.</li>
-            <li><strong>Check the run log</strong> for exit code 0. If you see errors, double-check your token and environment variables.</li>
-            <li><strong>Open YNAB</strong> and confirm that your transactions were processed &mdash; payees should be clean, memos filled in.</li>
-        </ul>
+        <ol style="margin: 0.5rem 0 1.2rem 1.2rem; color: var(--text-secondary); display: grid; gap: 0.4rem;">
+            <li>Click <strong>"Run job"</strong> in the job detail page.</li>
+            <li>Wait for it to finish and check that the <strong>exit code is 0</strong> in the run log.</li>
+            <li>Open <strong>YNAB</strong> and confirm that your recent transactions have been processed &mdash; payees should be clean and memos populated.</li>
+        </ol>
 
-        <p>
-            Once the manual run looks good, the cron trigger will take care of the rest.
-            Your transactions will be cleaned up automatically, whether your laptop is on or not.
-        </p>
+        <div class="callout callout-tip" role="note">
+            <div class="callout-label">That's it</div>
+            <p>
+                Once the manual run succeeds, you're done. The cron trigger will take it from here &mdash;
+                your transactions will be cleaned up automatically, whether your laptop is on or not.
+            </p>
+        </div>
     </section>
 
     <!-- ===== FOOTER ===== -->
