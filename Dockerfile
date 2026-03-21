@@ -1,5 +1,12 @@
 # First stage, build the application
 FROM eclipse-temurin:25.0.2_10-jdk-alpine AS build
+# Create a minimal system user for the build (no login shell, no sudo).
+# Home dir is required so Gradle can write its cache to ~/.gradle.
+RUN addgroup --system gradle \
+ && adduser --system --ingroup gradle --home /home/gradle gradle \
+ && mkdir -p /home/gradle/src \
+ && chown -R gradle:gradle /home/gradle
+USER gradle
 COPY --chown=gradle:gradle ./gradlew /home/gradle/src/
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle gradle/ /home/gradle/src/gradle/

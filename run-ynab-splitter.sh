@@ -2,6 +2,13 @@
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
+#path to docker executable
+# typicaly paths:
+#  /usr/local/bin/docker
+#  /opt/homebrew/bin/docker
+DOCKER_EXE=/opt/homebrew/bin/docker
+
+
 calculate_last_successful_run () {
     local LAST_SUCCESS="$1"
     local TIME_AGO="unknown time ago"
@@ -30,11 +37,11 @@ calculate_last_successful_run () {
 
 LOG_DIR="${SCRIPT_DIR}/logs"
 # Run the Docker container
-/usr/local/bin/docker run \
+$DOCKER_EXE run \
   -v "${LOG_DIR}:/app/logs" \
   --env-file "${SCRIPT_DIR}/.env" \
   --rm --name ynab-updater \
-  zzave/ynab-split-payee:0.0.1
+  zzave/ynab-split-payee:0.2.2
 
 RESULT="$?"
 if [ "$RESULT" -eq 0 ]; then
