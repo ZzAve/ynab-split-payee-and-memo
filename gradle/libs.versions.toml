@@ -10,7 +10,7 @@ logback = "1.5.32"
 logstash-logback-encoder = "8.0"
 kotest = "6.1.7"
 shadow = "9.3.2"
-wiremock = "3.10.0"
+wiremock = "3.13.2"
 
 [libraries]
 kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
