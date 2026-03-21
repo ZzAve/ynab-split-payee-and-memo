@@ -1,5 +1,7 @@
 FROM node:24-alpine AS builder
 
+ARG APP_VERSION=dev
+
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci

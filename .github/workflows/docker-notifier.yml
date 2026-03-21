@@ -25,8 +25,6 @@ jobs:
             arch: arm64
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v3
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -46,13 +44,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Determine app version
+        id: app-version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "version=${{ steps.meta.outputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v6
         with:
-          context: notifier
+          context: "{{defaultContext}}:notifier"
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.app-version.outputs.version }}
           cache-from: type=registry,ref=zzave/github-actions-buildcache:ynab-notifier-${{ matrix.arch }}
           cache-to: type=registry,ref=zzave/github-actions-buildcache:ynab-notifier-${{ matrix.arch }},mode=max
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
