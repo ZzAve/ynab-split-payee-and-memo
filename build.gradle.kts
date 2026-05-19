@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.graalvm.native)
     application
     `jvm-test-suite`
 }
@@ -25,6 +26,21 @@ kotlin {
     jvmToolchain(25)
 }
 
+graalvmNative {
+    toolchainDetection.set(true)
+    metadataRepository { enabled.set(true) }
+    binaries {
+        named("main") {
+            imageName.set("ynab-split-payee")
+            mainClass.set("MainKt")
+            buildArgs.addAll(
+                "--no-fallback",
+                "-O2",
+            )
+        }
+    }
+}
+
 val generateBuildInfoProperties by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/resources/prod")
     val projectVersion = project.version.toString()
@@ -37,6 +53,10 @@ val generateBuildInfoProperties by tasks.registering {
             "version=$projectVersion\n",
         )
     }
+}
+
+sourceSets.main {
+    resources.srcDir(generateBuildInfoProperties)
 }
 
 val generateDebugBuildInfoProperties by tasks.registering {
@@ -94,15 +114,11 @@ dependencies {
 
     // Ktor client
     implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.json)
+    implementation(libs.ktor.client.java)
     implementation(libs.ktor.client.logging)
 
-    // Logging with SLF4J and Logback
-    implementation(libs.logback)
-    implementation(libs.janino)
-    implementation(libs.logstash.logback.encoder)
+    // Logging
+    implementation(libs.slf4j.simple)
 
     // Kotlinx DateTime
     implementation(libs.kotlinx.datetime)
@@ -128,7 +144,7 @@ testing {
                 implementation(libs.kotest.assertions.core)
                 implementation(libs.wiremock)
                 implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.cio)
+                implementation(libs.ktor.client.java)
                 implementation(libs.kotlinx.serialization)
             }
             targets {

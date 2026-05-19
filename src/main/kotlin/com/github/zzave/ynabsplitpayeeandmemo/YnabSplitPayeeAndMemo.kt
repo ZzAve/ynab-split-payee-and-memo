@@ -1,6 +1,5 @@
 package com.github.zzave.ynabsplitpayeeandmemo
 
-import ch.qos.logback.classic.Level
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
@@ -87,11 +86,6 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
     }
 
     private fun doRun() {
-        if (verbose) {
-            val appLogger = LoggerFactory.getLogger("com.github.zzave.ynabsplitpayeeandmemo") as ch.qos.logback.classic.Logger
-            appLogger.level = Level.DEBUG
-        }
-
         // Validate that --api-url is only used in debug builds
         if (apiUrl != null && !BuildInfo.IS_DEBUG_BUILD) {
             echo("Error: --api-url is only available in debug builds", err = true)

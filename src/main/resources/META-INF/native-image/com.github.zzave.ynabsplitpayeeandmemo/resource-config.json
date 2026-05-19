@@ -1,0 +1,8 @@
+{
+  "resources": {
+    "includes": [
+      {"pattern": ".*build-info\\.properties"},
+      {"pattern": ".*simplelogger\\.properties"}
+    ]
+  }
+}

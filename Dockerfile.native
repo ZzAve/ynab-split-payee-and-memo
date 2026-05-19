@@ -1,0 +1,14 @@
+FROM ghcr.io/graalvm/graalvm-community:25 AS build
+RUN useradd -m gradle && mkdir -p /workspace && chown gradle /workspace
+USER gradle
+WORKDIR /workspace
+COPY --chown=gradle gradle gradle
+COPY --chown=gradle gradlew settings.gradle.kts build.gradle.kts ./
+COPY --chown=gradle src src
+RUN ./gradlew nativeCompile --no-daemon --no-configuration-cache
+
+FROM debian:12-slim
+RUN useradd -r -s /bin/false ynab
+COPY --from=build /workspace/build/native/nativeCompile/ynab-split-payee /app/ynab-split-payee
+USER ynab
+ENTRYPOINT ["/app/ynab-split-payee"]

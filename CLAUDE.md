@@ -18,9 +18,12 @@ make test TEST="*TransactionUpdaterTest"  # Wildcard pattern
 make e2e-test   # Build debug JAR + run E2E integration tests
 make yolo       # Build without tests
 make clean      # Clean build artifacts
-make docker     # Build Docker image
-make run        # Build Docker image + run with .env file
-make dry-run    # Build Docker image + run in dry-run mode
+make docker     # Build JVM Docker image (jlink + Alpine)
+make run        # Build JVM Docker image + run with .env file
+make native     # Compile GraalVM native binary (requires GraalVM JDK 25)
+make native-test # Compile native binary + smoke-test --help
+make docker-native  # Build native Docker image (GraalVM build + debian:12-slim runtime)
+make dry-run    # Build native Docker image + run in dry-run mode
 ```
 
 Two JAR outputs:
@@ -34,7 +37,7 @@ Two JAR outputs:
 Four main classes in `src/main/kotlin/com/github/zzave/ynabsplitpayeeandmemo/`:
 
 - **YnabSplitPayeeAndMemo.kt** — CLI orchestrator (Clikt `CliktCommand`). Parses CLI args/env vars, fetches transactions, processes them in batches of 25, and updates via API.
-- **YnabClient.kt** — YNAB API v1 HTTP client (Ktor CIO). Handles auth, fetching budgets/transactions, and batch updates.
+- **YnabClient.kt** — YNAB API v1 HTTP client (Ktor Java engine / JDK HttpClient). Handles auth, fetching budgets/transactions, and batch updates. JSON is decoded explicitly via `json.decodeFromString<T>()` inline calls (compile-time serializer resolution, required for native-image compatibility).
 - **TransactionUpdater.kt** — Pure business logic. `findTransactionsToUpdate()` filters eligible transactions; `extractNewPayeeAndMemo()` splits on " - " (space-dash-space); `removeDuplicatedSuffix()` deduplicates repeated memo content.
 - **YnabModels.kt** — Kotlinx Serialization data classes for YNAB API request/response types.
 
@@ -49,18 +52,19 @@ Four main classes in `src/main/kotlin/com/github/zzave/ynabsplitpayeeandmemo/`:
 ## Tech Stack
 
 - **Kotlin** with JVM toolchain 25
-- **Ktor Client** (CIO engine) for HTTP
+- **Ktor Client** (Java engine — JDK HttpClient) for HTTP
 - **Kotlinx Serialization** for JSON
 - **Clikt** for CLI argument parsing
+- **SLF4J Simple** for logging (configured via `src/main/resources/simplelogger.properties`)
 - **Kotest** (FunSpec style) with JUnit 5 runner for tests
-- **Gradle** (Kotlin DSL) with Shadow plugin for fat JAR
+- **Gradle** (Kotlin DSL) with Shadow plugin for fat JAR and GraalVM Native Build Tools plugin for native binary
 - Version catalog in `gradle/libs.versions.toml`
 
 ## Configuration
 
 CLI options can also be set via environment variables: `YNAB_TOKEN`, `YNAB_BUDGET_ID`, `YNAB_BUDGET_IDS`, `YNAB_ACCOUNT_ID`. A `.env` file is used by `make run` / `make dry-run`.
 
-Logging is controlled by two env vars. `YNAB_LOG` sets the destination (`FILE` for file output, otherwise console). `YNAB_LOG_FORMAT` sets the format (`plain` for human-readable text, otherwise JSON via logstash-logback-encoder). Config in `src/main/resources/logback.xml`.
+Logging level is controlled via `YNAB_VERBOSE=true` (env var) or `--verbose` / `-v` (CLI flag), which sets `org.slf4j.simpleLogger.defaultLogLevel=debug` before any logger is initialized. Default is INFO. Log format and destination are configured in `src/main/resources/simplelogger.properties`.
 
 ## Testing Infrastructure
 
@@ -86,6 +90,14 @@ Logging is controlled by two env vars. `YNAB_LOG` sets the destination (`FILE` f
 - Both JARs embed `build-info.properties` with the project version
 - Production JAR has `isDebugBuild=false` → rejects `--api-url`
 - Debug JAR has `isDebugBuild=true` → accepts `--api-url`
+
+**Native binary** (`make native` / `make docker-native`):
+- Built with GraalVM Native Build Tools plugin (`org.graalvm.buildtools.native`)
+- Always has `isDebugBuild=false` — no native debug variant exists; E2E tests continue using the debug JAR
+- Reflection metadata lives in `src/main/resources/META-INF/native-image/com.github.zzave.ynabsplitpayeeandmemo/` (reflect-config.json + resource-config.json)
+- Serialization uses `json.decodeFromString<T>()` inline functions — serializers are resolved at compile time, not via reflection
+- Docker runtime image: `debian:12-slim` running as non-root user `ynab`
+- `YNAB_LOG` / `YNAB_LOG_FORMAT` have no effect in native builds (slf4j-simple, no logback)
 
 ## Documentation Site
 

@@ -1,13 +1,12 @@
 [versions]
 clikt = "5.1.0"
-janino = "3.1.12"
+graalvm-native = "0.10.6"
 kotlin = "2.3.20"
 kotlinxCoroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kotlinxSerialization = "1.10.0"
 ktor = "3.4.1"
-logback = "1.5.32"
-logstash-logback-encoder = "8.0"
+slf4j = "2.0.16"
 kotest = "6.1.7"
 shadow = "9.4.0"
 wiremock = "3.13.2"
@@ -17,22 +16,19 @@ kotest-runner-junit5 = { group = "io.kotest", name = "kotest-runner-junit5", ver
 kotest-assertions-core = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
 clikt = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
 clikt-testing = { group = "com.github.ajalt.clikt", name = "clikt", version.ref = "clikt" }
-janino = {group="org.codehaus.janino", name ="janino", version.ref ="janino"}
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio-jvm", version.ref = "ktor" }
-ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-java = { group = "io.ktor", name = "ktor-client-java", version.ref = "ktor" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
-ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
-logstash-logback-encoder = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstash-logback-encoder" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 wiremock = { group = "org.wiremock", name = "wiremock-standalone", version.ref = "wiremock" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+graalvm-native = { id = "org.graalvm.buildtools.native", version.ref = "graalvm-native" }
 
