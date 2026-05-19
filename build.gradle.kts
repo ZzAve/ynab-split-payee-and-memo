@@ -84,7 +84,9 @@ tasks.shadowJar {
 
 val debugShadowJar by tasks.registering(ShadowJar::class) {
     archiveClassifier.set("debug-all")
-    from(sourceSets.main.get().output)
+    from(sourceSets.main.get().output) {
+        exclude("build-info.properties")
+    }
     from(generateDebugBuildInfoProperties)
     configurations = listOf(project.configurations.runtimeClasspath.get())
     manifest {
