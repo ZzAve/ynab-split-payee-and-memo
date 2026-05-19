@@ -34,7 +34,7 @@ native-test: native
 	./build/native/nativeCompile/ynab-split-payee --help
 
 docker-native:
-	docker build -f Dockerfile.native -t ${docker_image_name}:${docker_image_version}-native .
+	docker build -f Dockerfile.native --build-arg APP_VERSION=${docker_image_version} -t ${docker_image_name}:${docker_image_version}-native .
 
 run: docker
 	docker run \

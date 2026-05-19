@@ -69,13 +69,6 @@ class YnabSplitPayeeAndMemo : CliktCommand() {
         envvar = "YNAB_API_URL",
     )
 
-    private val verbose by option(
-        "-v",
-        "--verbose",
-        help = "Enable debug logging",
-        envvar = "YNAB_VERBOSE",
-    ).flag()
-
     override fun run() {
         try {
             doRun()

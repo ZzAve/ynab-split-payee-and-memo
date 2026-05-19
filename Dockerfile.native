@@ -4,8 +4,10 @@ USER gradle
 WORKDIR /workspace
 COPY --chown=gradle gradle gradle
 COPY --chown=gradle gradlew settings.gradle.kts build.gradle.kts ./
+COPY --chown=gradle gradle.properties ./
 COPY --chown=gradle src src
-RUN ./gradlew nativeCompile --no-daemon --no-configuration-cache
+ARG APP_VERSION
+RUN ./gradlew nativeCompile --no-daemon --no-configuration-cache ${APP_VERSION:+-Pversion=$APP_VERSION}
 
 FROM debian:12-slim
 RUN useradd -r -s /bin/false ynab
