@@ -1,8 +1,7 @@
 package com.github.zzave.ynabsplitpayeeandmemo
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.engine.java.Java
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -16,8 +15,8 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 
@@ -31,18 +30,15 @@ class YnabClient(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        encodeDefaults = true
+        explicitNulls = false
+    }
+
     private val client =
-        HttpClient {
-            install(ContentNegotiation) {
-                json(
-                    Json {
-                        ignoreUnknownKeys = true
-                        isLenient = true
-                        encodeDefaults = true
-                        explicitNulls = false
-                    },
-                )
-            }
+        HttpClient(Java) {
             install(Logging) {
                 logger = Logger.DEFAULT
                 level = LogLevel.INFO
@@ -67,7 +63,7 @@ class YnabClient(
             throw Exception("Failed to fetch budgets: ${response.status}")
         }
 
-        val ynabResponse: YnabResponse<BudgetSummaryResponse> = response.body()
+        val ynabResponse = json.decodeFromString<YnabResponse<BudgetSummaryResponse>>(response.bodyAsText())
 
         val budgets = ynabResponse.data.budgets
         check(budgets.isNotEmpty()) {
@@ -123,7 +119,7 @@ class YnabClient(
             throw Exception("Failed to fetch transactions: ${response.status}")
         }
 
-        val ynabResponse: YnabResponse<TransactionsResponse> = response.body()
+        val ynabResponse = json.decodeFromString<YnabResponse<TransactionsResponse>>(response.bodyAsText())
         val allTransactions = ynabResponse.data.transactions
         val activeTransactions = allTransactions.filter { !it.deleted }
         logger.debug("Fetched {} transactions ({} deleted, {} active)", allTransactions.size, allTransactions.size - activeTransactions.size, activeTransactions.size)
@@ -150,7 +146,7 @@ class YnabClient(
             client.patch("$baseUrl/budgets/$budgetId/transactions") {
                 header("Authorization", "Bearer $token")
                 contentType(ContentType.Application.Json)
-                setBody(wrapper)
+                setBody(json.encodeToString(wrapper))
                 logger.debug("Request body: {}", this.body)
             }
 
@@ -160,7 +156,7 @@ class YnabClient(
             throw Exception("Failed to update transactions: ${response.status}, $body")
         }
 
-        val ynabResponse: YnabResponse<SaveTransactionsResponse> = response.body()
+        val ynabResponse = json.decodeFromString<YnabResponse<SaveTransactionsResponse>>(response.bodyAsText())
         logger.debug("Successfully updated {} transactions", ynabResponse.data.transactions.size)
 
         return ynabResponse.data.transactions

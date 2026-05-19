@@ -27,6 +27,15 @@ clean:
 docker:
 	docker build --build-arg APP_VERSION=${docker_image_version} -t ${docker_image_name}:${docker_image_version} .
 
+native:
+	./gradlew nativeCompile --no-configuration-cache
+
+native-test: native
+	./build/native/nativeCompile/ynab-split-payee --help
+
+docker-native:
+	docker build -f Dockerfile.native --build-arg APP_VERSION=${docker_image_version} -t ${docker_image_name}:${docker_image_version}-native .
+
 run: docker
 	docker run \
 	-v "${CURRENT_DIR}/logs:/app/logs" \
@@ -34,13 +43,11 @@ run: docker
 	--rm --name ynab-updater \
 	${docker_image_name}:${docker_image_version}
 
-dry-run: docker
+dry-run: docker-native
 	docker run \
-		-v "${CURRENT_DIR}/logs:/app/logs" \
-		-e YNAB_LOG=CLI \
 		--env-file .env \
 		--rm --name ynab-updater \
-		${docker_image_name}:${docker_image_version} --dry-run
+		${docker_image_name}:${docker_image_version}-native --dry-run
 
 
 
