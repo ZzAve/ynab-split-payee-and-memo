@@ -1,5 +1,5 @@
 # First stage, build the application
-FROM eclipse-temurin:25.0.2_10-jdk-alpine AS build
+FROM eclipse-temurin:25.0.4_7-jdk-alpine AS build
 # Create a minimal system user for the build (no login shell, no sudo).
 # Home dir is required so Gradle can write its cache to ~/.gradle.
 RUN addgroup --system gradle \
@@ -20,7 +20,7 @@ RUN ./gradlew shadowJar --no-daemon --no-configuration-cache ${APP_VERSION:+-Pve
 # JDK 25 (JEP 493) no longer ships jmods but jlink can still create custom
 # runtime images from the linkable runtime. We use jdeps to discover which
 # modules the fat JAR actually needs, then jlink to produce a minimal JRE.
-FROM eclipse-temurin:25.0.2_10-jdk-alpine AS jre-builder
+FROM eclipse-temurin:25.0.4_7-jdk-alpine AS jre-builder
 COPY --from=build /home/gradle/src/build/libs/*-all.jar /tmp/app.jar
 RUN MODULES=$("$JAVA_HOME"/bin/jdeps \
          --print-module-deps \
